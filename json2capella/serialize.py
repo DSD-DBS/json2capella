@@ -107,9 +107,7 @@ class CapellaDataPackage:
             Enumeration object if enumeration already exists, else None.
         """
         try:
-            enum_obj = self.model.search(
-                "Enumeration", below=create_in
-            ).by_name(enum.name)
+            enum_obj = create_in.datatypes.by_name(enum.name)
             logger.info("%s already exists.", enum_obj._short_repr_())
             return enum_obj
         except KeyError:
@@ -136,10 +134,14 @@ class CapellaDataPackage:
         superclass = create_in.classes.by_name(class_def.name)
 
         for prop in class_def.properties:
+            try:
+                parent = self.data_package.packages.by_name(
+                    getattr(prop.type, "parent", None)
+                )
+            except KeyError:
+                parent = create_in
             if isinstance(prop.type, parse.ClassDef):
-                partclass = self.model.search(
-                    "Class", below=create_in
-                ).by_name(prop.type.name)
+                partclass = parent.classes.by_name(prop.type.name)
                 composition = self._create_composition(
                     superclass, prop, partclass
                 )
@@ -160,7 +162,7 @@ class CapellaDataPackage:
             else:
                 if isinstance(prop.type, parse.EnumDef):
                     property_type = self.model.search(
-                        "Enumeration", below=create_in
+                        "Enumeration", below=parent
                     ).by_name(prop.type.name)
                 else:
                     try:
@@ -182,8 +184,8 @@ class CapellaDataPackage:
                 composition = self._create_composition(
                     superclass, prop, property_type
                 )
-            self._set_cardinality(composition, prop)
-            self._set_range(composition, prop)
+            self._set_cardinality(composition, prop.card)
+            self._set_range(composition, prop.range)
         logger.info("Created properties for %s.", class_def.name)
 
     def _create_composition(
@@ -209,27 +211,26 @@ class CapellaDataPackage:
         return composition
 
     def _set_cardinality(
-        self, composition: information.Property, prop: parse.PropertyDef
+        self, composition: information.Property, card: parse.Range
     ) -> None:
         """Set cardinality for composition in Capella model."""
         composition.min_card = capellambse.new_object(
-            "LiteralNumericValue", value=prop.min_card
+            "LiteralNumericValue", value=card.min
         )
         composition.max_card = capellambse.new_object(
-            "LiteralNumericValue", value=prop.max_card
+            "LiteralNumericValue", value=card.max
         )
 
     def _set_range(
-        self, composition: information.Property, prop: parse.PropertyDef
+        self, composition: information.Property, range: parse.Range | None
     ) -> None:
         """Set range for composition in Capella model."""
-        if prop.min_value:
+        if range:
             composition.min = capellambse.new_object(
-                "LiteralNumericValue", value=prop.min_value
+                "LiteralNumericValue", value=range.min
             )
-        if prop.max_value:
             composition.max = capellambse.new_object(
-                "LiteralNumericValue", value=prop.max_value
+                "LiteralNumericValue", value=range.max
             )
 
     def save_changes(self) -> None:

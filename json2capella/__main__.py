@@ -8,6 +8,8 @@ import sys
 import click
 
 import json2capella
+from json2capella import convert
+from json2capella.viewer import app
 
 
 @click.command()
@@ -16,10 +18,14 @@ import json2capella
     prog_name="capella-json-tools",
     message="%(prog)s %(version)s",
 )
-@click.argument("json_path", type=click.Path(exists=True), required=True)
+@click.argument(
+    "json_path",
+    type=click.Path(exists=True, path_type=pathlib.Path),
+    required=True,
+)
 @click.argument(
     "capella_path",
-    type=click.Path(exists=True, path_type=pathlib.Path),
+    type=click.Path(exists=True),
     required=True,
 )
 @click.argument(
@@ -38,15 +44,13 @@ import json2capella
 )
 @click.option("--port", type=int, help="Open model viewer after import.")
 def main(
-    json_path: str,
+    json_path: pathlib.Path,
     capella_path: str,
     layer: str,
     action: str,
     port: int,
 ):
     """Import elemts to Capella data package from JSON file."""
-    from json2capella import convert
-    from json2capella.viewer import app
 
     converter = convert.Converter(
         json_path,

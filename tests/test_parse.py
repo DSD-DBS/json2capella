@@ -18,9 +18,8 @@ def sample_json_data():
     return data
 
 
-def test_parse_pkgdef_from_file(sample_json_data):
-    json_file = EXAMPLE_JSON_PATH.as_posix()
-    pkg_def = parse.PkgDef.from_file(json_file)
+def test_parse_pkgdef_from_file():
+    pkg_def = parse.PkgDef.from_file(EXAMPLE_JSON_PATH)
 
     assert pkg_def.name == "SamplePackage"
     assert pkg_def.description == "Sample package description"

@@ -23,11 +23,11 @@ Usage
 
 .. code-block:: bash
 
-   $ python -m json2capella <JSON_FILE_PATH> <CAPELLA_MODEL_PATH> <CAPELLA_MODEL_LAYER> --port=<PORT> --exists-action=<EXISTS_ACTION>
+   $ python -m json2capella <JSON_PATH> <CAPELLA_MODEL_PATH> <CAPELLA_MODEL_LAYER> --port=<PORT> --exists-action=<EXISTS_ACTION>
 
-*  **<JSON_FILE_PATH>**, import from JSON file <JSON_FILE_PATH>
-*  **<CAPELLA_MODEL_PATH>**, export to Capella model <CAPELLA_MODEL_PATH>
-*  **<CAPELLA_MODEL_LAYER>**, use data package of Capella model layer <CAPELLA_MODEL_LAYER>
+*  **<JSON_PATH>**, JSON file or folder with JSON files
+*  **<CAPELLA_MODEL_PATH>**, Capella project directory or .aird file
+*  **<CAPELLA_MODEL_LAYER>**, import to data package of Capella model layer <CAPELLA_MODEL_LAYER>
 *  **--port=<PORT>**, start Capella model viewer at <PORT> (optional)
 *  **--exists-action=<EXISTS_ACTION>**, action to take if a Capella element already exists (optional)
 

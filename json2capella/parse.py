@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import json
+import pathlib
+import typing as t
 
 
 class LiteralDef:
@@ -20,22 +22,39 @@ class EnumDef:
     """Enum definition."""
 
     def __init__(
-        self, name: str, description: str, literals: list[LiteralDef]
+        self,
+        name: str,
+        description: str,
+        literals: list[LiteralDef],
+        parent: str | None = None,
     ):
         self.name = name
         self.description = description
         self.literals = literals
+        self.parent = parent
 
 
 class ClassDef:
     """Class definition."""
 
     def __init__(
-        self, name: str, description: str, properties: list[PropertyDef]
+        self,
+        name: str,
+        description: str,
+        properties: list[PropertyDef],
+        parent: str | None = None,
     ):
         self.name = name
         self.description = description
         self.properties = properties
+        self.parent = parent
+
+
+class Range(t.NamedTuple):
+    """Define range of values."""
+
+    max: str
+    min: str
 
 
 class PropertyDef:
@@ -46,18 +65,14 @@ class PropertyDef:
         name: str,
         description: str,
         type: ClassDef | EnumDef | str,
-        min_card: str,
-        max_card: str,
-        min_value: str | None,
-        max_value: str | None,
+        card: Cardinality,
+        range: Range | None,
     ):
         self.name = name
         self.description = description
         self.type = type
-        self.min_card = min_card
-        self.max_card = max_card
-        self.min_value = min_value
-        self.max_value = max_value
+        self.card = card
+        self.range = range
 
 
 class PkgDef:
@@ -78,11 +93,9 @@ class PkgDef:
         self.packages = packages
 
     @classmethod
-    def from_file(cls, file_path: str):
+    def from_file(cls, file_path: pathlib.Path):
         """Parse package definition from JSON file."""
-        with open(file_path, encoding="utf-8") as file:
-            data = json.load(file)
-
+        data = json.loads(file_path.read_text())
         return cls.from_json(data)
 
     @classmethod
@@ -104,6 +117,7 @@ class PkgDef:
                 literals,
             )
             enums.append(enum_def)
+
         classes = []
         for class_ in data.get("structs", []):
             properties = []
@@ -111,40 +125,46 @@ class PkgDef:
                 multiplicity = property_.get("multiplicity")
                 if multiplicity:
                     min_card, max_card = multiplicity.split("..")
+                    card = Range(min_card, max_card)
                 else:
-                    min_card, max_card = "1", "1"
+                    card = Range("1", "1")
 
-                range = property_.get("range")
-                if range:
-                    min_value, max_value = range.split("..")
+                if range_raw := property_.get("range"):
+                    min_value, max_value = range_raw.split("..")
+                    range = Range(min_value, max_value)
                 else:
-                    min_value, max_value = None, None
+                    range = None
 
                 property_def = PropertyDef(
                     property_.get("name", ""),
                     property_.get("info", ""),
                     "",
-                    min_card,
-                    max_card,
-                    min_value,
-                    max_value,
+                    card,
+                    range,
                 )
-                if class_name := (
-                    property_.get("reference") or property_.get("composition")
-                ):
-                    property_def.type = ClassDef(
-                        class_name,
-                        "",
-                        [],
-                    )
-                elif enum_name := property_.get("enumType"):
-                    property_def.type = EnumDef(
-                        enum_name,
-                        "",
-                        [],
-                    )
+
+                if type_name := property_.get("dataType"):
+                    property_def.type = type_name
                 else:
-                    property_def.type = property_.get("dataType")
+                    if class_name := (
+                        property_.get("reference")
+                        or property_.get("composition")
+                    ):
+                        property_def.type = ClassDef(
+                            class_name,
+                            "",
+                            [],
+                        )
+                    else:
+                        enum_name = property_.get("enumType")
+                        property_def.type = EnumDef(
+                            enum_name,
+                            "",
+                            [],
+                        )
+
+                    if len(ref := property_def.type.name.split(".")) == 2:
+                        property_def.type.parent, property_def.type.name = ref
 
                 properties.append(property_def)
             class_def = ClassDef(

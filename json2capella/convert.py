@@ -3,6 +3,7 @@
 """Convert JSON to Capella data package."""
 
 import logging
+import pathlib
 
 import click
 from capellambse.model.crosslayer import information
@@ -16,9 +17,21 @@ class Converter:
     """Convert JSON to Capella data package."""
 
     def __init__(
-        self, json_path: str, capella_path: str, layer: str, action: str
+        self,
+        json_path: pathlib.Path,
+        capella_path: str,
+        layer: str,
+        action: str,
     ):
-        self.json = parse.PkgDef.from_file(json_path)
+        self.json = parse.PkgDef("", "", [], [], [])
+        if json_path.is_dir():
+            for json_file in json_path.rglob("*.json"):
+                pkg_def = parse.PkgDef.from_file(json_file)
+                self.json.packages.append(pkg_def)
+        else:
+            pkg_def = parse.PkgDef.from_file(json_path)
+            self.json.packages.append(pkg_def)
+
         self.capella = serialize.CapellaDataPackage(capella_path, layer)
         self.action = action
 
