@@ -127,6 +127,16 @@ class CapellaDataPackage:
             logger.info("%s created.", enum_obj._short_repr_())
             return None
 
+    def _get_parent(
+        self, package_name: str | None, default: information.DataPkg
+    ) -> information.DataPkg:
+        try:
+            return self.model.search(
+                "DataPkg", below=self.data_package
+            ).by_name(package_name)
+        except KeyError:
+            return default
+
     def create_properties(
         self, class_def: parse.ClassDef, create_in: information.DataPkg
     ) -> None:
@@ -135,58 +145,63 @@ class CapellaDataPackage:
 
         for prop in class_def.properties:
             try:
-                parent = self.data_package.packages.by_name(
-                    getattr(prop.type, "parent", None)
-                )
-            except KeyError:
-                parent = create_in
-            if isinstance(prop.type, parse.ClassDef):
-                partclass = parent.classes.by_name(prop.type.name)
-                composition = self._create_composition(
-                    superclass, prop, partclass
-                )
-                association = create_in.owned_associations.create(
-                    navigable_members=[composition]
-                )
-                association.members.create(
-                    "Property",
-                    type=superclass,
-                    kind="ASSOCIATION",
-                    min_card=capellambse.new_object(
-                        "LiteralNumericValue", value="1"
-                    ),
-                    max_card=capellambse.new_object(
-                        "LiteralNumericValue", value="1"
-                    ),
-                )
-            else:
-                if isinstance(prop.type, parse.EnumDef):
-                    property_type = self.model.search(
-                        "Enumeration", below=parent
-                    ).by_name(prop.type.name)
+                if isinstance(prop.type, parse.ClassDef):
+                    parent = self._get_parent(prop.type.parent, create_in)
+                    partclass = parent.classes.by_name(prop.type.name)
+                    composition = self._create_composition(
+                        superclass, prop, partclass
+                    )
+                    association = create_in.owned_associations.create(
+                        navigable_members=[composition]
+                    )
+                    association.members.create(
+                        "Property",
+                        type=superclass,
+                        kind="ASSOCIATION",
+                        min_card=capellambse.new_object(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        max_card=capellambse.new_object(
+                            "LiteralNumericValue", value="1"
+                        ),
+                    )
                 else:
-                    try:
-                        property_type = self.data_types.datatypes.by_name(
-                            prop.type
-                        )
-                    except KeyError:
-                        if "char" in prop.type or "string" in prop.type:
-                            type = "StringType"
-                        elif "bool" in prop.type or "boolean" in prop.type:
-                            type = "BooleanType"
-                        else:
-                            type = "NumericType"
-
-                        property_type = self.data_types.datatypes.create(
-                            type, name=prop.type
-                        )
-
-                composition = self._create_composition(
-                    superclass, prop, property_type
+                    raise KeyError
+            except KeyError:
+                composition = self._create_attribute(
+                    superclass, prop, create_in
                 )
+
             self._set_cardinality(composition, prop.card)
             self._set_range(composition, prop.range)
         logger.info("Created properties for %s.", class_def.name)
+
+    def _create_attribute(
+        self,
+        superclass: information.Class,
+        attr: parse.PropertyDef,
+        parent: information.DataPkg,
+    ) -> information.Property:
+        if isinstance(attr.type, str):
+            parent = self.data_types
+            type_name = attr.type
+        else:
+            parent = self._get_parent(attr.type.parent, parent)
+            type_name = attr.type.name
+        try:
+            attr_type = parent.datatypes.by_name(type_name)
+        except KeyError:
+            if "char" in type_name or "string" in type_name:
+                type = "StringType"
+            elif "bool" in type_name or "boolean" in type_name:
+                type = "BooleanType"
+            else:
+                type = "NumericType"
+
+            attr_type = self.data_types.datatypes.create(type, name=type_name)
+
+        composition = self._create_composition(superclass, attr, attr_type)
+        return composition
 
     def _create_composition(
         self,

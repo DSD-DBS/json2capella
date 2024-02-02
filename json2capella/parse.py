@@ -12,7 +12,7 @@ import typing as t
 class LiteralDef:
     """Literal definition."""
 
-    def __init__(self, name: str, description: str, value: int):
+    def __init__(self, name: str, description: str, value: str):
         self.name = name
         self.description = description
         self.value = value
@@ -65,7 +65,7 @@ class PropertyDef:
         name: str,
         description: str,
         type: ClassDef | EnumDef | str,
-        card: Cardinality,
+        card: Range,
         range: Range | None,
     ):
         self.name = name
@@ -95,7 +95,8 @@ class PkgDef:
     @classmethod
     def from_file(cls, file_path: pathlib.Path):
         """Parse package definition from JSON file."""
-        data = json.loads(file_path.read_text())
+        with open(file_path, encoding="utf-8") as file:
+            data = json.load(file)
         return cls.from_json(data)
 
     @classmethod
@@ -108,7 +109,7 @@ class PkgDef:
                 literal_def = LiteralDef(
                     literal.get("name", ""),
                     literal.get("info", ""),
-                    literal.get("intId", i),
+                    literal.get("intId", str(i)),
                 )
                 literals.append(literal_def)
             enum_def = EnumDef(
@@ -122,6 +123,14 @@ class PkgDef:
         for class_ in data.get("structs", []):
             properties = []
             for property_ in class_.get("attrs", []):
+                description = f"<p>{property_.get('info', '')}</p>"
+                if see := property_.get("see", ""):
+                    description += f"<p><strong>see: </strong><a href='{see}'>{see}</a></p>"
+                if exp := property_.get("exp", ""):
+                    description += f"<p><strong>exp: </strong>{exp}</p>"
+                if unit := property_.get("unit", ""):
+                    description += f"<p><strong>unit: </strong>{unit}</p>"
+
                 multiplicity = property_.get("multiplicity")
                 if multiplicity:
                     min_card, max_card = multiplicity.split("..")
@@ -167,9 +176,14 @@ class PkgDef:
                         property_def.type.parent, property_def.type.name = ref
 
                 properties.append(property_def)
+            description = f"<p>{class_.get('info', '')}</p>"
+            if see := class_.get("see", ""):
+                description += (
+                    f"<p><strong>see: </strong><a href='{see}'>{see}</a></p>"
+                )
             class_def = ClassDef(
                 class_.get("name", ""),
-                class_.get("info", ""),
+                description,
                 properties,
             )
             classes.append(class_def)
