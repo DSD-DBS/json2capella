@@ -42,7 +42,7 @@ from json2capella.viewer import app
     default="ask" if sys.stdin.isatty() else "abort",
     help="Default action when an element already exists.",
 )
-@click.option("--port", type=int, help="Open model viewer after import.")
+@click.option("--port", type=int, help="Open model viewer on given port.")
 def main(
     json_path: pathlib.Path,
     capella_path: str,
@@ -50,7 +50,12 @@ def main(
     action: str,
     port: int,
 ):
-    """Import elemts to Capella data package from JSON file."""
+    """Import elements to Capella data package from JSON file.
+
+    JSON_PATH: Path to JSON file or folder with JSON files.
+    CAPELLA_PATH: Path to Capella model.
+    LAYER: Layer of Capella model to import elements to.
+    """
 
     converter = convert.Converter(
         json_path,

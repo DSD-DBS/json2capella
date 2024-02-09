@@ -104,87 +104,19 @@ class PkgDef:
         """Parse package definition from JSON data."""
         enums = []
         for enum in data.get("enums", []):
-            literals = []
-            for i, literal in enumerate(enum.get("enumLiterals", [])):
-                literal_def = LiteralDef(
-                    literal.get("name", ""),
-                    literal.get("info", ""),
-                    literal.get("intId", str(i)),
-                )
-                literals.append(literal_def)
             enum_def = EnumDef(
                 enum.get("name", ""),
                 enum.get("info", ""),
-                literals,
+                _get_literals(enum),
             )
             enums.append(enum_def)
 
         classes = []
         for class_ in data.get("structs", []):
-            properties = []
-            for property_ in class_.get("attrs", []):
-                description = f"<p>{property_.get('info', '')}</p>"
-                if see := property_.get("see", ""):
-                    description += f"<p><strong>see: </strong><a href='{see}'>{see}</a></p>"
-                if exp := property_.get("exp", ""):
-                    description += f"<p><strong>exp: </strong>{exp}</p>"
-                if unit := property_.get("unit", ""):
-                    description += f"<p><strong>unit: </strong>{unit}</p>"
-
-                multiplicity = property_.get("multiplicity")
-                if multiplicity:
-                    min_card, max_card = multiplicity.split("..")
-                    card = Range(min_card, max_card)
-                else:
-                    card = Range("1", "1")
-
-                if range_raw := property_.get("range"):
-                    min_value, max_value = range_raw.split("..")
-                    range = Range(min_value, max_value)
-                else:
-                    range = None
-
-                property_def = PropertyDef(
-                    property_.get("name", ""),
-                    property_.get("info", ""),
-                    "",
-                    card,
-                    range,
-                )
-
-                if type_name := property_.get("dataType"):
-                    property_def.type = type_name
-                else:
-                    if class_name := (
-                        property_.get("reference")
-                        or property_.get("composition")
-                    ):
-                        property_def.type = ClassDef(
-                            class_name,
-                            "",
-                            [],
-                        )
-                    else:
-                        enum_name = property_.get("enumType")
-                        property_def.type = EnumDef(
-                            enum_name,
-                            "",
-                            [],
-                        )
-
-                    if len(ref := property_def.type.name.split(".")) == 2:
-                        property_def.type.parent, property_def.type.name = ref
-
-                properties.append(property_def)
-            description = f"<p>{class_.get('info', '')}</p>"
-            if see := class_.get("see", ""):
-                description += (
-                    f"<p><strong>see: </strong><a href='{see}'>{see}</a></p>"
-                )
             class_def = ClassDef(
                 class_.get("name", ""),
-                description,
-                properties,
+                _get_description(class_),
+                _get_properties(class_),
             )
             classes.append(class_def)
 
@@ -200,3 +132,79 @@ class PkgDef:
             packages,
         )
         return out
+
+
+def _get_literals(enum: dict) -> list[LiteralDef]:
+    literals = []
+    for i, literal in enumerate(enum.get("enumLiterals", [])):
+        literal_def = LiteralDef(
+            literal.get("name", ""),
+            literal.get("info", ""),
+            literal.get("intId", str(i)),
+        )
+        literals.append(literal_def)
+    return literals
+
+
+def _get_properties(class_: dict) -> list[PropertyDef]:
+    properties = []
+    for property_ in class_.get("attrs", []):
+        if multiplicity := property_.get("multiplicity"):
+            card = _get_range(multiplicity)
+        else:
+            card = Range("1", "1")
+
+        if range_raw := property_.get("range"):
+            range = _get_range(range_raw)
+        else:
+            range = None
+
+        if type_name := property_.get("dataType"):
+            type_def = type_name
+        else:
+            if class_name := (
+                property_.get("reference") or property_.get("composition")
+            ):
+                type_def = ClassDef(
+                    class_name,
+                    "",
+                    [],
+                )
+            else:
+                enum_name = property_.get("enumType")
+                type_def = EnumDef(
+                    enum_name,
+                    "",
+                    [],
+                )
+
+            if len(ref := type_def.name.split(".")) == 2:
+                type_def.parent, type_def.name = ref
+
+        property_def = PropertyDef(
+            property_.get("name", ""),
+            _get_description(property_),
+            type_def,
+            card,
+            range,
+        )
+        properties.append(property_def)
+    return properties
+
+
+def _get_description(element: dict) -> str:
+    description = f"<p>{element.get('info', '')}</p>"
+    if see := element.get("see", ""):
+        description += (
+            "<p><strong>see: </strong>" f"<a href='{see}'>{see}</a></p>"
+        )
+    if exp := element.get("exp", ""):
+        description += f"<p><strong>exp: </strong>{exp}</p>"
+    if unit := element.get("unit", ""):
+        description += f"<p><strong>unit: </strong>{unit}</p>"
+    return description
+
+
+def _get_range(range_str: str) -> Range:
+    min_value, max_value = range_str.split("..")
+    return Range(min_value, max_value)
