@@ -99,23 +99,17 @@
 
                     var contextGroup = svgContainer.append("g");
                     contextGroup.attr("class", "contextGroup");
-
-                    if (depElements.nodes().length == 0) {
+                    this.classList.forEach((id) => {
+                        let uuid = id.replace("context-", "");
+                        if (id == uuid) {
+                            return;
+                        }
+                        groupedNodes.push(uuid);
+                        let escapedUUID = escapeUUIDForCSSSelector(uuid);
                         contextGroup
                             .node()
-                            .appendChild(d3.select(this).node());
-                    } else {
-                        depElements.nodes()[0].classList.forEach((id) => {
-                            let uuid = id.replace("context-", "");
-                            groupedNodes.push(uuid);
-                            let escapedUUID = escapeUUIDForCSSSelector(uuid);
-                            contextGroup
-                                .node()
-                                .appendChild(
-                                    d3.select("#" + escapedUUID).node()
-                                );
-                        });
-                    }
+                            .appendChild(d3.select("#" + escapedUUID).node());
+                    });
                 });
 
                 const draggableElements =
