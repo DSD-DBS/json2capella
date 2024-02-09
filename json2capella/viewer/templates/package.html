@@ -41,7 +41,7 @@
                         <ol>
                             {% for cls in element.classes %}
                             <li>
-                                <a href="/class/{{ cls.uuid }}"
+                                <a href="/class/{{ cls.uuid }}.html"
                                     >{{ cls._short_html_() }}</a
                                 >
                             </li>
@@ -50,12 +50,12 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>enumeration</td>
+                    <td>datatypes</td>
                     <td>
                         <ol>
-                            {% for enum in element.enumerations %}
+                            {% for enum in element.datatypes %}
                             <li>
-                                <a href="/enum/{{ enum.uuid }}"
+                                <a href="/enum/{{ enum.uuid }}.html"
                                     >{{ enum._short_html_() }}</a
                                 >
                             </li>
@@ -69,7 +69,7 @@
                         <ol>
                             {% for pkg in element.packages %}
                             <li>
-                                <a href="/package/{{ pkg.uuid }}"
+                                <a href="/package/{{ pkg.uuid }}.html"
                                     >{{ pkg._short_html_() }}</a
                                 >
                             </li>

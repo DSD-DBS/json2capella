@@ -19,9 +19,14 @@ class CapellaDataPackage:
     def __init__(self, capella_path: str, layer: str):
         self.model = capellambse.MelodyModel(capella_path)
         self.data_package = getattr(self.model, layer).data_package
-        self.data_types = self.model.sa.data_package.packages.create(
-            "DataPkg", name="Data Types"
+        datatypes_pkg_def = parse.PkgDef("Data Types", "", [], [], [])
+        self.data_types = self.create_package(
+            datatypes_pkg_def, self.model.sa.data_package
         )
+        if not self.data_types:
+            self.data_types = self.create_package(
+                datatypes_pkg_def, self.model.sa.data_package
+            )
 
     def remove_class(
         self, cls_obj: information.Class, remove_from: information.DataPkg

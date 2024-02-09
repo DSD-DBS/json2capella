@@ -13,7 +13,6 @@
             href="{{ url_for('static', path='/styles.css') }}"
             rel="stylesheet"
         />
-        <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom-container@0.6.1"></script>
     </head>
     <body>
         <main>
@@ -107,8 +106,9 @@
                             .appendChild(d3.select(this).node());
                     } else {
                         depElements.nodes()[0].classList.forEach((id) => {
-                            groupedNodes.push(id);
-                            let escapedUUID = escapeUUIDForCSSSelector(id);
+                            let uuid = id.replace("context-", "");
+                            groupedNodes.push(uuid);
+                            let escapedUUID = escapeUUIDForCSSSelector(uuid);
                             contextGroup
                                 .node()
                                 .appendChild(
@@ -123,16 +123,9 @@
 
                 // Zoom and pan
                 svg.call(
-                    d3
-                        .zoom()
-                        .extent([
-                            [0, 0],
-                            [svg.node().clientWidth, svg.node().clientHeight],
-                        ])
-                        .scaleExtent([0.1, 10])
-                        .on("zoom", (event) => {
-                            svgContainer.attr("transform", event.transform);
-                        })
+                    d3.zoom().on("zoom", (event) => {
+                        svgContainer.attr("transform", event.transform);
+                    })
                 );
 
                 // Create an array of data with the same length as your selection

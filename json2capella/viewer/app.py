@@ -42,7 +42,7 @@ def root(request: fastapi.Request):
     return response
 
 
-@app.get("/{type}/{uuid}", response_class=responses.HTMLResponse)
+@app.get("/{type}/{uuid}.html", response_class=responses.HTMLResponse)
 def view(request: fastapi.Request, type: str, uuid: str):
     """Display element by uuid."""
     element = app.state.model.by_uuid(uuid)
