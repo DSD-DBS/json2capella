@@ -9,16 +9,13 @@
         <meta charset="UTF-8" />
         <link rel="icon" href="/static/icons/favicon.ico" />
         <title>{{ element.name }} - Overview</title>
-        <link
-            href="{{ url_for('static', path='/styles.css') }}"
-            rel="stylesheet"
-        />
+        <link href="/static/styles.css" rel="stylesheet" />
     </head>
     <body>
         <main>
             <h1>
-                {{ element.name }}
-                <span style="font-size: 70%">({{ element.xtype }})</span>
+                <span>{{ element.name }}</span>
+                <span style="font-size: 70%">{{ element.xtype }}</span>
             </h1>
             <table>
                 <tr>
@@ -31,9 +28,7 @@
                 </tr>
                 <tr>
                     <td>description</td>
-                    <td>
-                        <span>{{ element.description }}</span>
-                    </td>
+                    <td class="description">{{ element.description }}</td>
                 </tr>
                 <tr>
                     <td>properties</td>
@@ -41,11 +36,11 @@
                         <ol>
                             {% for prop in element.properties %}
                             <li>
-                                <p>
-                                    <strong>Property</strong> "{{ prop.name
-                                    }}": {{prop.type.name}}
-                                    <span>{{ prop.description }}</span>
-                                </p>
+                                <strong>Property</strong> "{{ prop.name }}":
+                                {{prop.type.name}}
+                                <span class="description"
+                                    >{{ prop.description }}</span
+                                >
                             </li>
                             {% endfor %}
                         </ol>
@@ -90,8 +85,6 @@
                 let groupedNodes = [];
 
                 svgContainer.selectAll(".Box").each(function () {
-                    var depElements = d3.select(this).selectAll("g");
-
                     if (groupedNodes.includes(this.id)) {
                         return;
                     }
@@ -102,6 +95,7 @@
                     this.classList.forEach((id) => {
                         let uuid = id.replace("context-", "");
                         if (id == uuid) {
+                            // Not a context class
                             return;
                         }
                         groupedNodes.push(uuid);

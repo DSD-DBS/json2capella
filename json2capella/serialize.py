@@ -203,7 +203,7 @@ class CapellaDataPackage:
             else:
                 type = "NumericType"
 
-            attr_type = self.data_types.datatypes.create(type, name=type_name)
+            attr_type = self.data_types.datatypes.create(type, name=type_name)  # type: ignore[union-attr]
 
         composition = self._create_composition(superclass, attr, attr_type)
         return composition

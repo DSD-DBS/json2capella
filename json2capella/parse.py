@@ -106,7 +106,7 @@ class PkgDef:
         for enum in data.get("enums", []):
             enum_def = EnumDef(
                 enum.get("name", ""),
-                enum.get("info", ""),
+                _get_description(enum),
                 _get_literals(enum),
             )
             enums.append(enum_def)
@@ -126,7 +126,7 @@ class PkgDef:
 
         out = cls(
             data.get("name", ""),
-            data.get("info", ""),
+            _get_description(data),
             enums,
             classes,
             packages,
@@ -139,7 +139,7 @@ def _get_literals(enum: dict) -> list[LiteralDef]:
     for i, literal in enumerate(enum.get("enumLiterals", [])):
         literal_def = LiteralDef(
             literal.get("name", ""),
-            literal.get("info", ""),
+            _get_description(literal),
             literal.get("intId", str(i)),
         )
         literals.append(literal_def)

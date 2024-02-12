@@ -15,7 +15,7 @@ from json2capella.viewer import app
 @click.command()
 @click.version_option(
     version=json2capella.__version__,
-    prog_name="capella-json-tools",
+    prog_name="json2capella",
     message="%(prog)s %(version)s",
 )
 @click.argument(
