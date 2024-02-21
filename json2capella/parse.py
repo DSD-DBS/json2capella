@@ -53,8 +53,8 @@ class ClassDef:
 class Range(t.NamedTuple):
     """Define range of values."""
 
-    max: str
     min: str
+    max: str
 
 
 class PropertyDef:
