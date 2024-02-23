@@ -5,7 +5,9 @@
 import logging
 import pathlib
 
+import capellambse
 import click
+from capellambse import decl
 from capellambse.model.crosslayer import information
 
 from json2capella import parse, serialize
@@ -157,3 +159,108 @@ class Converter:
         self._handle_relations(self.json, current_root)
 
         self.capella.save_changes()
+
+
+def convert_package(pkg: dict) -> tuple[dict, set]:
+    new_pkg = {"name": pkg["name"]}
+    if info := pkg.get("info"):
+        new_pkg["description"] = info
+
+    new_pkg["classes"] = []
+    needed_datatypes = set()
+    for i in pkg.get("structs", []):
+        cls, datatypes = convert_class(pkg["name"], i)
+        new_pkg["classes"].append(cls)
+        needed_datatypes.update(datatypes)
+
+    new_pkg["enumerations"] = [
+        convert_enum(enum) for enum in pkg.get("enums", [])
+    ]
+
+    if pkg.get("subPackages"):
+        raise NotImplementedError("Subpackages are not supported yet")
+
+    return new_pkg, needed_datatypes
+
+
+def convert_class(pkgname: str, cls: dict) -> tuple[dict, set[str]]:
+    needed_datatypes = set()
+    new_cls = {
+        "name": cls["name"],
+        "description": _get_description(cls),
+        "properties": [],
+    }
+
+    for attr in cls.get("attrs", []):
+        prop = {
+            "name": attr["name"],
+            "description": _get_description(attr),
+        }
+        match attr:
+            case {"reference": ref} | {"composition": ref} | {"enumType": ref}:
+                if "." in ref:
+                    prop["type"] = decl.Promise(ref)
+                else:
+                    prop["type"] = decl.Promise(f"{pkgname}.{ref}")
+            case {"dataType": ref}:
+                needed_datatypes.add(ref)
+                prop["type"] = decl.Promise(f"DataType-{ref}")
+
+        if value_range := attr.get("range"):
+            if ".." not in value_range:
+                raise ValueError(
+                    f"Invalid value range, expected format A..B: {value_range}"
+                )
+            min_val, max_val = value_range.split("..", 1)
+            prop["min_value"] = capellambse.new_object(
+                "LiteralNumericValue", value=min_val
+            )
+            prop["max_value"] = capellambse.new_object(
+                "LiteralNumericValue", value=max_val
+            )
+
+        if multiplicity := attr.get("multiplicity"):
+            if ".." in multiplicity:
+                min_val, _, max_val = multiplicity.partition("..")
+            else:
+                min_val = max_val = multiplicity
+
+            prop["min_card"] = capellambse.new_object(
+                "LiteralNumericValue", value=min_val
+            )
+            prop["max_card"] = capellambse.new_object(
+                "LiteralNumericValue", value=max_val
+            )
+
+    return new_cls, needed_datatypes
+
+
+def convert_enum(enum: dict) -> dict:
+    new_enum = {
+        "name": enum["name"],
+        "description": _get_description(enum),
+        "literals": [
+            {
+                "name": i["name"],
+                "description": _get_description(i),
+                "value": capellambse.new_object(
+                    "LiteralNumericValue", str(i["intId"])
+                ),
+            }
+            for i in enum.get("enumLiterals", [])
+        ],
+    }
+    return new_enum
+
+
+def _get_description(element: dict) -> str:
+    description = f"<p>{element.get('info', '')}</p>"
+    if see := element.get("see", ""):
+        description += (
+            "<p><strong>see: </strong>" f"<a href='{see}'>{see}</a></p>"
+        )
+    if exp := element.get("exp", ""):
+        description += f"<p><strong>exp: </strong>{exp}</p>"
+    if unit := element.get("unit", ""):
+        description += f"<p><strong>unit: </strong>{unit}</p>"
+    return description

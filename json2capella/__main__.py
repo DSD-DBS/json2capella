@@ -2,9 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Main entry point into json2capella."""
 
+import json
 import pathlib
 import sys
+import typing as t
 
+import capellambse
 import click
 
 import json2capella
@@ -24,8 +27,8 @@ from json2capella.viewer import app
     required=True,
 )
 @click.argument(
-    "capella_path",
-    type=click.Path(exists=True),
+    "model",
+    type=capellambse.cli_helpers.ModelCLI(),
     required=True,
 )
 @click.argument(
@@ -45,10 +48,8 @@ from json2capella.viewer import app
 @click.option("--port", type=int, help="Open model viewer on given port.")
 def main(
     json_path: pathlib.Path,
-    capella_path: str,
+    model: capellambse.MelodyModel,
     layer: str,
-    action: str,
-    port: int,
 ):
     """Import elements to Capella data package from JSON file.
 
@@ -57,16 +58,16 @@ def main(
     LAYER: Layer of Capella model to import elements to.
     """
 
-    converter = convert.Converter(
-        json_path,
-        capella_path,
-        layer,
-        action,
-    )
-    converter()
+    # TODO validate against the JSON schema
 
-    if port:
-        app.start(converter.capella.model, layer, port)
+    if json_path.is_dir():
+        files: t.Iterable[pathlib.Path] = json_path.glob("**/*.json")
+    else:
+        files = [json_path]
+
+    for file in files:
+        raw_package = json.loads(file.read_text())
+        package = convert.convert_package(raw_package)
 
 
 if __name__ == "__main__":
