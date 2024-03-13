@@ -1,0 +1,66 @@
+# Copyright DB InfraGO AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+- parent: !uuid "00000000-0000-0000-0000-000000000000"
+  sync:
+      packages:
+          - find:
+                name: package1
+            set:
+                description: "This is package1 info."
+            sync:
+                classes:
+                    - promise_id: package1.MyClass
+                      find:
+                          name: MyClass
+                      set:
+                          description: "This is MyClass info."
+                          properties:
+                              - promise_id: package1.MyClass.attr1
+                                name: attr1
+                                description: "This is attr1 info."
+                                kind: COMPOSITION
+                                type: !promise datatype.uint8
+          - find:
+                name: package2
+            set:
+                description: "This is package2 info."
+            sync:
+                classes:
+                    - promise_id: package2.MyOtherClass
+                      find:
+                          name: MyOtherClass
+                      set:
+                          description: "This is MyOtherClass info."
+                          properties:
+                              - promise_id: package2.MyOtherClass.attr1
+                                name: attr1
+                                description: "This is attr1 info."
+                                kind: ASSOCIATION
+                                type: !promise package1.MyClass
+            extend:
+                owned_associations:
+                    - navigable_members:
+                          - !promise package2.MyOtherClass.attr1
+                      members:
+                          - _type: Property
+                            type: !promise package2.MyOtherClass
+                            kind: ASSOCIATION
+                            min_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+                            max_card: !new_object
+                                _type: LiteralNumericValue
+                                value: "1"
+
+- parent: !uuid "00000000-0000-0000-0000-000000000001"
+  sync:
+      packages:
+          - find:
+                name: "Data Types"
+            sync:
+                datatypes:
+                    - promise_id: datatype.uint8
+                      find:
+                          name: uint8
+                          _type: NumericType

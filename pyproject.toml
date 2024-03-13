@@ -28,11 +28,9 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "capellambse",
-  "capellambse_context_diagrams",
+  "capellambse@ git+https://github.com/DSD-DBS/py-capellambse.git@decl-sync",
   "click",
-  "fastapi",
-  "uvicorn[standard]",
+
 ]
 
 [project.urls]

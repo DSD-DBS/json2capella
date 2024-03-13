@@ -2,17 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Main entry point into json2capella."""
 
-import json
+import io
 import pathlib
-import sys
-import typing as t
 
 import capellambse
 import click
+from capellambse import cli_helpers, decl
 
 import json2capella
-from json2capella import convert
-from json2capella.viewer import app
+from json2capella import importer
 
 
 @click.command()
@@ -21,53 +19,52 @@ from json2capella.viewer import app
     prog_name="json2capella",
     message="%(prog)s %(version)s",
 )
-@click.argument(
-    "json_path",
-    type=click.Path(exists=True, path_type=pathlib.Path),
+@click.option(
+    "-i",
+    "--input",
+    type=str,
     required=True,
-)
-@click.argument(
-    "model",
-    type=capellambse.cli_helpers.ModelCLI(),
-    required=True,
-)
-@click.argument(
-    "layer",
-    type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
-    required=True,
+    help="Path to JSON file or folder with JSON files.",
 )
 @click.option(
-    "--exists-action",
-    "action",
-    type=click.Choice(
-        ["skip", "replace", "abort", "ask"], case_sensitive=False
-    ),
-    default="ask" if sys.stdin.isatty() else "abort",
-    help="Default action when an element already exists.",
+    "-m",
+    "--model",
+    type=cli_helpers.ModelCLI(),
+    required=True,
+    help="Path to the Capella model.",
 )
-@click.option("--port", type=int, help="Open model viewer on given port.")
+@click.option(
+    "-l",
+    "--layer",
+    type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
+    required=True,
+    help="The layer to import the messages to.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(path_type=pathlib.Path, dir_okay=False),
+    help="Output file path for decl YAML.",
+)
 def main(
-    json_path: pathlib.Path,
+    input: str,
     model: capellambse.MelodyModel,
     layer: str,
+    output: pathlib.Path,
 ):
-    """Import elements to Capella data package from JSON file.
-
-    JSON_PATH: Path to JSON file or folder with JSON files.
-    CAPELLA_PATH: Path to Capella model.
-    LAYER: Layer of Capella model to import elements to.
-    """
+    """Import elements to Capella data package from JSON."""
 
     # TODO validate against the JSON schema
 
-    if json_path.is_dir():
-        files: t.Iterable[pathlib.Path] = json_path.glob("**/*.json")
-    else:
-        files = [json_path]
+    root_uuid = getattr(model, layer).data_package.uuid
+    types_uuid = model.sa.data_package.uuid
 
-    for file in files:
-        raw_package = json.loads(file.read_text())
-        package = convert.convert_package(raw_package)
+    yml = importer.Importer(input).to_yaml(root_uuid, types_uuid)
+    if output:
+        output.write_text(yml, encoding="utf-8")
+    else:
+        decl.apply(model, io.StringIO(yml))
+        model.save()
 
 
 if __name__ == "__main__":

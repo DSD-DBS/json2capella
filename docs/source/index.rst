@@ -23,19 +23,11 @@ Usage
 
 .. code-block:: bash
 
-   $ python -m json2capella <JSON_PATH> <CAPELLA_MODEL_PATH> <CAPELLA_MODEL_LAYER> --port=<PORT> --exists-action=<EXISTS_ACTION>
+   $ python -m json2capella  -i <INPUT> -m <MODEL> -l <LAYER>
 
-*  **<JSON_PATH>**, JSON file or folder with JSON files
-*  **<CAPELLA_MODEL_PATH>**, Capella project directory or .aird file
-*  **<CAPELLA_MODEL_LAYER>**, import to data package of Capella model layer <CAPELLA_MODEL_LAYER>
-*  **--port=<PORT>**, start Capella model viewer at <PORT> (optional)
-*  **--exists-action=<EXISTS_ACTION>**, action to take if a Capella element already exists (optional)
-
-   * **skip**, skip elements
-   * **replace**, replace elements
-   * **abort**, abort import
-   * **ask**, ask the user (default)
-
+*  **-i/--input**, path to JSON file or directory
+*  **-m/--model**, path to Capella model
+*  **-l/--layer**, layer to import data into
 
 .. toctree::
    :maxdepth: 2
