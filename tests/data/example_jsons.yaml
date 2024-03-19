@@ -21,6 +21,12 @@
                                 description: "This is attr1 info."
                                 kind: COMPOSITION
                                 type: !promise datatype.uint8
+                                min_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
+                                max_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
           - find:
                 name: package2
             set:
@@ -38,20 +44,28 @@
                                 description: "This is attr1 info."
                                 kind: ASSOCIATION
                                 type: !promise package1.MyClass
-            extend:
+                                min_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
+                                max_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
                 owned_associations:
-                    - navigable_members:
-                          - !promise package2.MyOtherClass.attr1
-                      members:
-                          - _type: Property
-                            type: !promise package2.MyOtherClass
-                            kind: ASSOCIATION
-                            min_card: !new_object
-                                _type: LiteralNumericValue
-                                value: "1"
-                            max_card: !new_object
-                                _type: LiteralNumericValue
-                                value: "1"
+                    - find:
+                          name: package2.MyOtherClass.attr1
+                      set:
+                          navigable_members:
+                              - !promise package2.MyOtherClass.attr1
+                          members:
+                              - _type: Property
+                                type: !promise package2.MyOtherClass
+                                kind: ASSOCIATION
+                                min_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
+                                max_card: !new_object
+                                    _type: LiteralNumericValue
+                                    value: "1"
 
 - parent: !uuid "00000000-0000-0000-0000-000000000001"
   sync:

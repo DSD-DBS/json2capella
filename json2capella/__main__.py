@@ -12,6 +12,8 @@ from capellambse import cli_helpers, decl
 import json2capella
 from json2capella import importer
 
+from . import logger
+
 
 @click.command()
 @click.version_option(
@@ -22,7 +24,7 @@ from json2capella import importer
 @click.option(
     "-i",
     "--input",
-    type=str,
+    type=click.Path(path_type=pathlib.Path, exists=True),
     required=True,
     help="Path to JSON file or folder with JSON files.",
 )
@@ -47,22 +49,27 @@ from json2capella import importer
     help="Output file path for decl YAML.",
 )
 def main(
-    input: str,
+    input: pathlib.Path,
     model: capellambse.MelodyModel,
     layer: str,
     output: pathlib.Path,
 ):
     """Import elements to Capella data package from JSON."""
 
-    # TODO validate against the JSON schema
+    # TODO validate against valid JSON schema
 
     root_uuid = getattr(model, layer).data_package.uuid
     types_uuid = model.sa.data_package.uuid
 
-    yml = importer.Importer(input).to_yaml(root_uuid, types_uuid)
+    parsed = importer.Importer(input)
+    logger.info("Loaded %d packages", len(parsed.json["subPackages"]))
+
+    yml = parsed.to_yaml(root_uuid, types_uuid)
     if output:
+        logger.info("Writing to file %s", output)
         output.write_text(yml, encoding="utf-8")
     else:
+        logger.info("Writing to model %s", model.name)
         decl.apply(model, io.StringIO(yml))
         model.save()
 

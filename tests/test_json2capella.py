@@ -20,7 +20,7 @@ SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
 
 @pytest.fixture
 def importer():
-    return Importer(DUMMY_PATH.as_posix())
+    return Importer(DUMMY_PATH)
 
 
 class TestDescription:
@@ -161,6 +161,12 @@ class TestClass:
                         "description": "This is attr1 info.",
                         "kind": "COMPOSITION",
                         "type": decl.Promise("datatype.uint8"),
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
                     },
                 ],
             },
@@ -274,6 +280,12 @@ class TestClass:
                         "kind": "COMPOSITION",
                         "type": decl.Promise("my_package.MyOtherClass"),
                         "description": "This is attr1 info.",
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
                     },
                 ],
             },
@@ -281,22 +293,27 @@ class TestClass:
 
         expected_associations = [
             {
-                "navigable_members": [
-                    decl.Promise("my_package.MyClass.attr1")
-                ],
-                "members": [
-                    {
-                        "_type": "Property",
-                        "type": decl.Promise("my_package.MyClass"),
-                        "kind": "ASSOCIATION",
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    }
-                ],
+                "find": {
+                    "name": "my_package.MyClass.attr1",
+                },
+                "set": {
+                    "navigable_members": [
+                        decl.Promise("my_package.MyClass.attr1")
+                    ],
+                    "members": [
+                        {
+                            "_type": "Property",
+                            "type": decl.Promise("my_package.MyClass"),
+                            "kind": "ASSOCIATION",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        }
+                    ],
+                },
             }
         ]
 
@@ -338,6 +355,12 @@ class TestClass:
                         "kind": "ASSOCIATION",
                         "type": decl.Promise("my_package.MyOtherClass"),
                         "description": "This is attr1 info.",
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
                     },
                 ],
             },
@@ -345,22 +368,27 @@ class TestClass:
 
         expected_associations = [
             {
-                "navigable_members": [
-                    decl.Promise("my_package.MyClass.attr1")
-                ],
-                "members": [
-                    {
-                        "_type": "Property",
-                        "type": decl.Promise("my_package.MyClass"),
-                        "kind": "ASSOCIATION",
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    }
-                ],
+                "find": {
+                    "name": "my_package.MyClass.attr1",
+                },
+                "set": {
+                    "navigable_members": [
+                        decl.Promise("my_package.MyClass.attr1")
+                    ],
+                    "members": [
+                        {
+                            "_type": "Property",
+                            "type": decl.Promise("my_package.MyClass"),
+                            "kind": "ASSOCIATION",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        }
+                    ],
+                },
             }
         ]
 
@@ -402,6 +430,12 @@ class TestClass:
                         "kind": "COMPOSITION",
                         "type": decl.Promise("my_package.MyEnum"),
                         "description": "This is attr1 info.",
+                        "min_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                        "max_card": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
                     },
                 ],
             },
@@ -417,6 +451,6 @@ class TestClass:
 
 def test_convert_package(importer):
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
-    actual = Importer(SAMPLE_PACKAGE_PATH.as_posix()).to_yaml(ROOT, SA_ROOT)
+    actual = Importer(SAMPLE_PACKAGE_PATH).to_yaml(ROOT, SA_ROOT)
 
     assert actual == expected

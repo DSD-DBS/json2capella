@@ -3,24 +3,27 @@
 """Tool for importing JSON data into a Capella data package."""
 
 import json
+import pathlib
+import re
 
-from capellambse import decl, filehandler, helpers
+from capellambse import decl, helpers
+
+VALID_RANGE_PATTERN = re.compile(r"^(-?\d+)\.\.(-?\d+|\*)$")
+VALID_CARD_PATTERN = re.compile(r"^(\d+)(?:\.\.(\d+|\*))?$")
 
 
 class Importer:
     """Class for importing JSON data into a Capella data package."""
 
-    def __init__(self, json_path: str) -> None:
-        root = filehandler.get_filehandler(json_path).rootdir
-        if root.is_dir():
-            self.json = {
-                "subPackages": [
-                    json.loads(file.read_text())
-                    for file in root.rglob("*.json")
-                ],
-            }
+    def __init__(self, json_path: pathlib.Path) -> None:
+        if json_path.is_dir():
+            files = list(json_path.rglob("*.json"))
         else:
-            self.json = json.loads(root.read_text())
+            files = [json_path]
+
+        self.json = {
+            "subPackages": [json.loads(file.read_text()) for file in files],
+        }
         self._promise_ids: set[str] = set()
         self._promise_id_refs: set[str] = set()
 
@@ -37,17 +40,14 @@ class Importer:
         ]
         packages = []
         for new_pkg in pkg.get("subPackages", []):
+            if any(k not in new_pkg for k in ["prefix", "name"]):
+                continue
             new_yml = {
                 "find": {
                     "name": new_pkg["name"],
                 }
             } | self._convert_package(new_pkg)
             packages.append(new_yml)
-
-        yml: dict = {}
-        if desc := _get_description(pkg):
-            yml["set"] = {}
-            yml["set"]["description"] = desc
 
         sync = {}
         if classes:
@@ -56,11 +56,15 @@ class Importer:
             sync["enumerations"] = enums
         if packages:
             sync["packages"] = packages
+        if associations:
+            sync["owned_associations"] = associations
+
+        yml: dict = {}
+        if desc := _get_description(pkg):
+            yml["set"] = {}
+            yml["set"]["description"] = desc
         if sync:
             yml["sync"] = sync
-        if associations:
-            yml["extend"] = {}
-            yml["extend"]["owned_associations"] = associations
 
         return yml
 
@@ -72,7 +76,7 @@ class Importer:
         attrs = []
         associations = []
         for attr in cls.get("attrs", []):
-            attr_promise_id = f"{prefix}.{cls['name']}.{attr['name']}"
+            attr_promise_id = f"{promise_id}.{attr['name']}"
             attr_yml = {
                 "promise_id": attr_promise_id,
                 "name": attr["name"],
@@ -99,29 +103,36 @@ class Importer:
             if "reference" in attr or "composition" in attr:
                 associations.append(
                     {
-                        "navigable_members": [decl.Promise(attr_promise_id)],
-                        "members": [
-                            {
-                                "_type": "Property",
-                                "type": decl.Promise(promise_id),
-                                "kind": "ASSOCIATION",
-                                "min_card": decl.NewObject(
-                                    "LiteralNumericValue", value="1"
-                                ),
-                                "max_card": decl.NewObject(
-                                    "LiteralNumericValue", value="1"
-                                ),
-                            }
-                        ],
+                        "find": {
+                            "name": attr_promise_id,
+                        },
+                        "set": {
+                            "navigable_members": [
+                                decl.Promise(attr_promise_id)
+                            ],
+                            "members": [
+                                {
+                                    "_type": "Property",
+                                    "type": decl.Promise(promise_id),
+                                    "kind": "ASSOCIATION",
+                                    "min_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                    "max_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                }
+                            ],
+                        },
                     }
                 )
 
             if value_range := attr.get("range"):
-                if ".." not in value_range:
+                if not (match := VALID_RANGE_PATTERN.match(value_range)):
                     raise ValueError(
                         f"Invalid value range, expected format A..B: {value_range}"
                     )
-                min_val, max_val = value_range.split("..", 1)
+                min_val, max_val = match.groups()
                 attr_yml["min_value"] = decl.NewObject(
                     "LiteralNumericValue", value=min_val
                 )
@@ -130,16 +141,21 @@ class Importer:
                 )
 
             if multiplicity := attr.get("multiplicity"):
-                if ".." in multiplicity:
-                    min_card, _, max_card = multiplicity.partition("..")
-                else:
-                    min_card = max_card = multiplicity
-                attr_yml["min_card"] = decl.NewObject(
-                    "LiteralNumericValue", value=min_card
-                )
-                attr_yml["max_card"] = decl.NewObject(
-                    "LiteralNumericValue", value=max_card
-                )
+                if not (match := VALID_CARD_PATTERN.match(multiplicity)):
+                    raise ValueError(
+                        f"Invalid multiplicity, expected digits: {multiplicity}"
+                    )
+                min_card, max_card = match.groups()
+                if not max_card:
+                    max_card = min_card
+            else:
+                min_card = max_card = "1"
+            attr_yml["min_card"] = decl.NewObject(
+                "LiteralNumericValue", value=min_card
+            )
+            attr_yml["max_card"] = decl.NewObject(
+                "LiteralNumericValue", value=max_card
+            )
             attrs.append(attr_yml)
 
         yml = {
