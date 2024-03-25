@@ -28,7 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "capellambse@ git+https://github.com/DSD-DBS/py-capellambse.git@decl-sync",
+  "capellambse",
   "click",
 
 ]

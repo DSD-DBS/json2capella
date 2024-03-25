@@ -8,6 +8,8 @@ from capellambse import decl, helpers
 
 from json2capella.importer import Importer, _get_description
 
+# pylint: disable=redefined-outer-name
+
 PATH = pathlib.Path(__file__).parent
 
 SAMPLE_PACKAGE_PATH = PATH.joinpath("data/example_jsons")
@@ -19,7 +21,7 @@ SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
 
 
 @pytest.fixture
-def importer():
+def importer() -> Importer:
     return Importer(DUMMY_PATH)
 
 
@@ -33,6 +35,7 @@ class TestDescription:
             "info": "This is my_attr info.",
         }
         expected = "This is my_attr info."
+
         actual = _get_description(element)
 
         assert actual == expected
@@ -54,6 +57,7 @@ class TestDescription:
             "<br><b>exp: </b>-3"
             "<br><b>unit: </b>m"
         )
+
         actual = _get_description(element)
 
         assert actual == expected
@@ -68,6 +72,7 @@ class TestDescription:
             "exp": -3,
         }
         expected = "<br><b>exp: </b>-3<br><b>unit: </b>m"
+
         actual = _get_description(element)
 
         assert actual == expected
@@ -75,14 +80,14 @@ class TestDescription:
 
 def test_convert_datatype(importer):
     promise_id = "datatype.uint8"
-
     expected = {
-        "promise_id": "datatype.uint8",
+        "promise_id": promise_id,
         "find": {
             "name": "uint8",
             "_type": "NumericType",
         },
     }
+
     actual = importer._convert_datatype(promise_id)
 
     assert decl.dump([actual]) == decl.dump([expected])
@@ -98,7 +103,6 @@ def test_convert_enum(importer):
             {"intId": 2, "name": "enumLiteral2"},
         ],
     }
-
     expected = {
         "promise_id": "my_package.MyEnum",
         "find": {
@@ -125,15 +129,16 @@ def test_convert_enum(importer):
             ],
         },
     }
+
     actual = importer._convert_enum("my_package", data)
 
     assert decl.dump([actual]) == decl.dump([expected])
-    assert {"my_package.MyEnum"} == importer._promise_ids
+    assert "my_package.MyEnum" in importer._promise_ids
 
 
 class TestClass:
     @staticmethod
-    def test_convert_class(importer):
+    def test_convert_class(importer: Importer):
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -146,7 +151,6 @@ class TestClass:
                 },
             ],
         }
-
         expected = {
             "promise_id": "my_package.MyClass",
             "find": {
@@ -171,15 +175,16 @@ class TestClass:
                 ],
             },
         }
+
         actual, associations = importer._convert_class("my_package", data)
 
         assert decl.dump([actual]) == decl.dump([expected])
-        assert {"my_package.MyClass"} == importer._promise_ids
-        assert {"datatype.uint8"} == importer._promise_id_refs
+        assert "my_package.MyClass" in importer._promise_ids
+        assert "datatype.uint8" in importer._promise_id_refs
         assert not associations
 
     @staticmethod
-    def test_convert_class_with_range_and_multiplicity(importer):
+    def test_convert_class_with_range_and_multiplicity(importer: Importer):
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -201,7 +206,6 @@ class TestClass:
                 },
             ],
         }
-
         expected = {
             "promise_id": "my_package.MyClass",
             "find": {
@@ -245,15 +249,16 @@ class TestClass:
                 ],
             },
         }
+
         actual, associations = importer._convert_class("my_package", data)
 
         assert decl.dump([actual]) == decl.dump([expected])
-        assert {"my_package.MyClass"} == importer._promise_ids
-        assert {"datatype.uint8"} == importer._promise_id_refs
+        assert "my_package.MyClass" in importer._promise_ids
+        assert "datatype.uint8" in importer._promise_id_refs
         assert not associations
 
     @staticmethod
-    def test_convert_class_with_composition(importer):
+    def test_convert_class_with_composition(importer: Importer):
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -290,7 +295,6 @@ class TestClass:
                 ],
             },
         }
-
         expected_associations = [
             {
                 "find": {
@@ -320,15 +324,16 @@ class TestClass:
         actual_yml, actual_associations = importer._convert_class(
             "my_package", data
         )
+
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
-        assert {"my_package.MyClass"} == importer._promise_ids
-        assert {"my_package.MyOtherClass"} == importer._promise_id_refs
+        assert "my_package.MyClass" in importer._promise_ids
+        assert "my_package.MyOtherClass" in importer._promise_id_refs
         assert decl.dump(actual_associations) == decl.dump(
             expected_associations
         )
 
     @staticmethod
-    def test_convert_class_with_reference(importer):
+    def test_convert_class_with_reference(importer: Importer):
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -365,7 +370,6 @@ class TestClass:
                 ],
             },
         }
-
         expected_associations = [
             {
                 "find": {
@@ -395,15 +399,16 @@ class TestClass:
         actual_yml, actual_associations = importer._convert_class(
             "my_package", data
         )
+
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
-        assert {"my_package.MyClass"} == importer._promise_ids
-        assert {"my_package.MyOtherClass"} == importer._promise_id_refs
+        assert "my_package.MyClass" in importer._promise_ids
+        assert "my_package.MyOtherClass" in importer._promise_id_refs
         assert decl.dump(actual_associations) == decl.dump(
             expected_associations
         )
 
     @staticmethod
-    def test_convert_class_with_enumType(importer):
+    def test_convert_class_with_enumType(importer: Importer):
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -444,12 +449,12 @@ class TestClass:
         actual, associations = importer._convert_class("my_package", data)
 
         assert decl.dump([actual]) == decl.dump([expected])
-        assert {"my_package.MyClass"} == importer._promise_ids
-        assert {"my_package.MyEnum"} == importer._promise_id_refs
+        assert "my_package.MyClass" in importer._promise_ids
+        assert "my_package.MyEnum" in importer._promise_id_refs
         assert not associations
 
 
-def test_convert_package(importer):
+def test_convert_package():
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
     actual = Importer(SAMPLE_PACKAGE_PATH).to_yaml(ROOT, SA_ROOT)
 

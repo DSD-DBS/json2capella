@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tool for importing JSON data into a Capella data package."""
 
+import collections as c
 import json
 import pathlib
 import re
+import typing as t
 
 from capellambse import decl, helpers
 
@@ -24,10 +26,10 @@ class Importer:
         self.json = {
             "subPackages": [json.loads(file.read_text()) for file in files],
         }
-        self._promise_ids: set[str] = set()
-        self._promise_id_refs: set[str] = set()
+        self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
+        self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
 
-    def _convert_package(self, pkg: dict) -> dict:
+    def _convert_package(self, pkg: dict[str, t.Any]) -> dict[str, t.Any]:
         associations = []
         classes = []
         for cls in pkg.get("structs", []):
@@ -72,7 +74,7 @@ class Importer:
         self, prefix: str, cls: dict
     ) -> tuple[dict, list[dict]]:
         promise_id = f"{prefix}.{cls['name']}"
-        self._promise_ids.add(promise_id)
+        self._promise_ids[promise_id] = None
         attrs = []
         associations = []
         for attr in cls.get("attrs", []):
@@ -98,7 +100,7 @@ class Importer:
                         ref = f"{prefix}.{ref}"
 
             attr_yml["type"] = decl.Promise(ref)
-            self._promise_id_refs.add(ref)
+            self._promise_id_refs[ref] = None
 
             if "reference" in attr or "composition" in attr:
                 associations.append(
@@ -130,7 +132,8 @@ class Importer:
             if value_range := attr.get("range"):
                 if not (match := VALID_RANGE_PATTERN.match(value_range)):
                     raise ValueError(
-                        f"Invalid value range, expected format A..B: {value_range}"
+                        "Invalid value range, "
+                        f"expected format A..B: {value_range}"
                     )
                 min_val, max_val = match.groups()
                 attr_yml["min_value"] = decl.NewObject(
@@ -143,7 +146,8 @@ class Importer:
             if multiplicity := attr.get("multiplicity"):
                 if not (match := VALID_CARD_PATTERN.match(multiplicity)):
                     raise ValueError(
-                        f"Invalid multiplicity, expected digits: {multiplicity}"
+                        "Invalid multiplicity, "
+                        f"expected digits: {multiplicity}"
                     )
                 min_card, max_card = match.groups()
                 if not max_card:
@@ -170,7 +174,7 @@ class Importer:
 
     def _convert_enum(self, prefix: str, enum: dict) -> dict:
         promise_id = f"{prefix}.{enum['name']}"
-        self._promise_ids.add(promise_id)
+        self._promise_ids[promise_id] = None
         yml = {
             "promise_id": promise_id,
             "find": {"name": enum["name"]},
@@ -214,7 +218,9 @@ class Importer:
             {"parent": decl.UUIDReference(helpers.UUIDString(layer_data_uuid))}
             | self._convert_package(self.json),
         ]
-        if needed_types := self._promise_id_refs - self._promise_ids:
+        if needed_types := [
+            p for p in self._promise_id_refs if p not in self._promise_ids
+        ]:
             datatypes = [
                 self._convert_datatype(promise_id)
                 for promise_id in needed_types
