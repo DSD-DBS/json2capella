@@ -4,6 +4,7 @@
 
 import io
 import pathlib
+import uuid
 
 import capellambse
 import click
@@ -39,8 +40,19 @@ from . import logger
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
-    required=True,
     help="The layer to import the messages to.",
+)
+@click.option(
+    "-r",
+    "--root",
+    type=click.UUID,
+    help="The UUID of the root package to import the messages to.",
+)
+@click.option(
+    "-t",
+    "--types",
+    type=click.UUID,
+    help="The UUID of the types package to import the created data types to.",
 )
 @click.option(
     "-o",
@@ -52,19 +64,27 @@ def main(
     input: pathlib.Path,
     model: capellambse.MelodyModel,
     layer: str,
+    root: uuid.UUID,
+    types: uuid.UUID,
     output: pathlib.Path,
 ):
     """Import elements to Capella data package from JSON."""
 
     # TODO validate against valid JSON schema
 
-    root_uuid = getattr(model, layer).data_package.uuid
-    types_uuid = model.sa.data_package.uuid
+    if root:
+        root_uuid = str(root)
+    elif layer:
+        root_uuid = getattr(model, layer).data_package.uuid
+    else:
+        raise click.UsageError("Either --root or --layer must be provided")
 
-    parsed = importer.Importer(input)
-    logger.info("Loaded %d packages", len(parsed.json["subPackages"]))
+    if types:
+        params = {"types_uuid": str(types)}
+    else:
+        params = {"types_parent_uuid": model.sa.data_package.uuid}
 
-    yml = parsed.to_yaml(root_uuid, types_uuid)
+    yml = importer.Importer(input).to_yaml(root_uuid, **params)
     if output:
         logger.info("Writing to file %s", output)
         output.write_text(yml, encoding="utf-8")

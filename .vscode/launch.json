@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Import local",
+            "name": "Import local to empty",
             "type": "debugpy",
             "request": "launch",
             "module": "json2capella",
@@ -17,7 +17,7 @@
             ]
         },
         {
-            "name": "Import remote",
+            "name": "Import remote to empty",
             "type": "debugpy",
             "request": "launch",
             "module": "json2capella",
@@ -32,7 +32,7 @@
             ]
         },
         {
-            "name": "Import dm_files",
+            "name": "Import dm_files to empty",
             "type": "debugpy",
             "request": "launch",
             "module": "json2capella",
@@ -47,7 +47,7 @@
             ]
         },
         {
-            "name": "Import infra",
+            "name": "Import infra to empty",
             "type": "debugpy",
             "request": "launch",
             "module": "json2capella",
@@ -59,6 +59,23 @@
                 "tests/data/empty_project_60",
                 "-l",
                 "sa"
+            ]
+        },
+        {
+            "name": "Import infra to existing",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "local_data/dm_files/infra.json",
+                "-m",
+                "local_data/workspace_Local_Test_/workspace/Local_Test_",
+                "-r",
+                "8413f173-f99b-411b-a5d8-f05a217eb96c",
+                "-t",
+                "cb436f6c-8d0f-4e6c-b6e7-ae1634a1987b"
             ]
         }
     ]

@@ -20,12 +20,14 @@ class Importer:
     def __init__(self, json_path: pathlib.Path) -> None:
         if json_path.is_dir():
             files = list(json_path.rglob("*.json"))
+            self.json = {
+                "subPackages": [
+                    json.loads(file.read_text()) for file in files
+                ],
+            }
         else:
-            files = [json_path]
+            self.json = json.loads(json_path.read_text())
 
-        self.json = {
-            "subPackages": [json.loads(file.read_text()) for file in files],
-        }
         self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
         self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
 
@@ -212,23 +214,40 @@ class Importer:
         }
         return yml
 
-    def to_yaml(self, layer_data_uuid: str, sa_data_uuid: str) -> str:
+    def to_yaml(
+        self,
+        root_uuid: str,
+        types_parent_uuid: str = "",
+        types_uuid: str = "",
+    ) -> str:
         """Convert JSON data to decl YAML."""
         instructions = [
-            {"parent": decl.UUIDReference(helpers.UUIDString(layer_data_uuid))}
+            {"parent": decl.UUIDReference(helpers.UUIDString(root_uuid))}
             | self._convert_package(self.json),
         ]
-        if needed_types := [
+        needed_types = [
             p for p in self._promise_id_refs if p not in self._promise_ids
-        ]:
-            datatypes = [
-                self._convert_datatype(promise_id)
-                for promise_id in needed_types
-            ]
+        ]
+        if not needed_types:
+            return decl.dump(instructions)
+
+        datatypes = [
+            self._convert_datatype(promise_id) for promise_id in needed_types
+        ]
+        if types_uuid:
             instructions.append(
                 {
                     "parent": decl.UUIDReference(
-                        helpers.UUIDString(sa_data_uuid)
+                        helpers.UUIDString(types_uuid)
+                    ),
+                    "sync": {"datatypes": datatypes},
+                }
+            )
+        elif types_parent_uuid:
+            instructions.append(
+                {
+                    "parent": decl.UUIDReference(
+                        helpers.UUIDString(types_parent_uuid)
                     ),
                     "sync": {
                         "packages": [
@@ -239,6 +258,10 @@ class Importer:
                         ],
                     },
                 }
+            )
+        else:
+            raise ValueError(
+                "Either types_parent_uuid or types_uuid must be provided"
             )
         return decl.dump(instructions)
 
