@@ -15,18 +15,21 @@
                           name: MyClass
                       set:
                           description: "This is MyClass info."
+                      sync:
                           properties:
                               - promise_id: package1.MyClass.attr1
-                                name: attr1
-                                description: "This is attr1 info."
-                                kind: COMPOSITION
-                                type: !promise datatype.uint8
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                                find:
+                                    name: attr1
+                                set:
+                                    description: "This is attr1 info."
+                                    kind: COMPOSITION
+                                    type: !promise datatype.uint8
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
           - find:
                 name: package2
             set:
@@ -38,18 +41,21 @@
                           name: MyOtherClass
                       set:
                           description: "This is MyOtherClass info."
+                      sync:
                           properties:
                               - promise_id: package2.MyOtherClass.attr1
-                                name: attr1
-                                description: "This is attr1 info."
-                                kind: ASSOCIATION
-                                type: !promise package1.MyClass
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                                find:
+                                    name: attr1
+                                set:
+                                    description: "This is attr1 info."
+                                    kind: ASSOCIATION
+                                    type: !promise package1.MyClass
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
                 owned_associations:
                     - find:
                           name: package2.MyOtherClass.attr1

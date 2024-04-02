@@ -80,10 +80,7 @@ class Importer:
         attrs = []
         associations = []
         for attr in cls.get("attrs", []):
-            attr_promise_id = f"{promise_id}.{attr['name']}"
-            attr_yml = {
-                "promise_id": attr_promise_id,
-                "name": attr["name"],
+            attr_yml: dict[str, t.Any] = {
                 "description": _get_description(attr),
             }
 
@@ -103,33 +100,6 @@ class Importer:
 
             attr_yml["type"] = decl.Promise(ref)
             self._promise_id_refs[ref] = None
-
-            if "reference" in attr or "composition" in attr:
-                associations.append(
-                    {
-                        "find": {
-                            "name": attr_promise_id,
-                        },
-                        "set": {
-                            "navigable_members": [
-                                decl.Promise(attr_promise_id)
-                            ],
-                            "members": [
-                                {
-                                    "_type": "Property",
-                                    "type": decl.Promise(promise_id),
-                                    "kind": "ASSOCIATION",
-                                    "min_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                    "max_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                }
-                            ],
-                        },
-                    }
-                )
 
             if value_range := attr.get("range"):
                 if not (match := VALID_RANGE_PATTERN.match(value_range)):
@@ -162,13 +132,52 @@ class Importer:
             attr_yml["max_card"] = decl.NewObject(
                 "LiteralNumericValue", value=max_card
             )
-            attrs.append(attr_yml)
+
+            attr_promise_id = f"{promise_id}.{attr['name']}"
+            attrs.append(
+                {
+                    "promise_id": attr_promise_id,
+                    "find": {
+                        "name": attr["name"],
+                    },
+                    "set": attr_yml,
+                }
+            )
+
+            if "reference" in attr or "composition" in attr:
+                associations.append(
+                    {
+                        "find": {
+                            "name": attr_promise_id,
+                        },
+                        "set": {
+                            "navigable_members": [
+                                decl.Promise(attr_promise_id)
+                            ],
+                            "members": [
+                                {
+                                    "_type": "Property",
+                                    "type": decl.Promise(promise_id),
+                                    "kind": "ASSOCIATION",
+                                    "min_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                    "max_card": decl.NewObject(
+                                        "LiteralNumericValue", value="1"
+                                    ),
+                                }
+                            ],
+                        },
+                    }
+                )
 
         yml = {
             "promise_id": promise_id,
             "find": {"name": cls["name"]},
             "set": {
                 "description": _get_description(cls),
+            },
+            "sync": {
                 "properties": attrs,
             },
         }

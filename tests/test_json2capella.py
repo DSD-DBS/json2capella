@@ -158,21 +158,27 @@ class TestClass:
             },
             "set": {
                 "description": "This is MyClass info.",
+            },
+            "sync": {
                 "properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
-                        "name": "attr1",
-                        "description": "This is attr1 info.",
-                        "kind": "COMPOSITION",
-                        "type": decl.Promise("datatype.uint8"),
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    },
-                ],
+                        "find": {
+                            "name": "attr1",
+                        },
+                        "set": {
+                            "description": "This is attr1 info.",
+                            "kind": "COMPOSITION",
+                            "type": decl.Promise("datatype.uint8"),
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        },
+                    }
+                ]
             },
         }
 
@@ -213,38 +219,48 @@ class TestClass:
             },
             "set": {
                 "description": "This is MyClass info.",
+            },
+            "sync": {
                 "properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
-                        "name": "attr1",
-                        "description": "This is attr1 info.",
-                        "kind": "COMPOSITION",
-                        "type": decl.Promise("datatype.uint8"),
-                        "min_value": decl.NewObject(
-                            "LiteralNumericValue", value="0"
-                        ),
-                        "max_value": decl.NewObject(
-                            "LiteralNumericValue", value="255"
-                        ),
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="0"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="*"
-                        ),
+                        "find": {
+                            "name": "attr1",
+                        },
+                        "set": {
+                            "description": "This is attr1 info.",
+                            "kind": "COMPOSITION",
+                            "type": decl.Promise("datatype.uint8"),
+                            "min_value": decl.NewObject(
+                                "LiteralNumericValue", value="0"
+                            ),
+                            "max_value": decl.NewObject(
+                                "LiteralNumericValue", value="255"
+                            ),
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="0"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="*"
+                            ),
+                        },
                     },
                     {
                         "promise_id": "my_package.MyClass.attr2",
-                        "name": "attr2",
-                        "description": "This is attr2 info.",
-                        "kind": "COMPOSITION",
-                        "type": decl.Promise("datatype.uint8"),
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="2"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="2"
-                        ),
+                        "find": {
+                            "name": "attr2",
+                        },
+                        "set": {
+                            "description": "This is attr2 info.",
+                            "kind": "COMPOSITION",
+                            "type": decl.Promise("datatype.uint8"),
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="2"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="2"
+                            ),
+                        },
                     },
                 ],
             },
@@ -278,20 +294,26 @@ class TestClass:
             },
             "set": {
                 "description": "This is MyClass info.",
+            },
+            "sync": {
                 "properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
-                        "name": "attr1",
-                        "kind": "COMPOSITION",
-                        "type": decl.Promise("my_package.MyOtherClass"),
-                        "description": "This is attr1 info.",
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    },
+                        "find": {
+                            "name": "attr1",
+                        },
+                        "set": {
+                            "kind": "COMPOSITION",
+                            "type": decl.Promise("my_package.MyOtherClass"),
+                            "description": "This is attr1 info.",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        },
+                    }
                 ],
             },
         }
@@ -353,20 +375,26 @@ class TestClass:
             },
             "set": {
                 "description": "This is MyClass info.",
+            },
+            "sync": {
                 "properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
-                        "name": "attr1",
-                        "kind": "ASSOCIATION",
-                        "type": decl.Promise("my_package.MyOtherClass"),
-                        "description": "This is attr1 info.",
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    },
+                        "find": {
+                            "name": "attr1",
+                        },
+                        "set": {
+                            "kind": "ASSOCIATION",
+                            "type": decl.Promise("my_package.MyOtherClass"),
+                            "description": "This is attr1 info.",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        },
+                    }
                 ],
             },
         }
@@ -428,20 +456,26 @@ class TestClass:
             },
             "set": {
                 "description": "This is MyClass info.",
+            },
+            "sync": {
                 "properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
-                        "name": "attr1",
-                        "kind": "COMPOSITION",
-                        "type": decl.Promise("my_package.MyEnum"),
-                        "description": "This is attr1 info.",
-                        "min_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                        "max_card": decl.NewObject(
-                            "LiteralNumericValue", value="1"
-                        ),
-                    },
+                        "find": {
+                            "name": "attr1",
+                        },
+                        "set": {
+                            "kind": "COMPOSITION",
+                            "type": decl.Promise("my_package.MyEnum"),
+                            "description": "This is attr1 info.",
+                            "min_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                            "max_card": decl.NewObject(
+                                "LiteralNumericValue", value="1"
+                            ),
+                        },
+                    }
                 ],
             },
         }
