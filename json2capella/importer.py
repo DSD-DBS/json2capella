@@ -154,17 +154,23 @@ class Importer:
                             "navigable_members": [
                                 decl.Promise(attr_promise_id)
                             ],
+                        },
+                        "sync": {
                             "members": [
                                 {
-                                    "_type": "Property",
-                                    "type": decl.Promise(promise_id),
-                                    "kind": "ASSOCIATION",
-                                    "min_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
-                                    "max_card": decl.NewObject(
-                                        "LiteralNumericValue", value="1"
-                                    ),
+                                    "find": {
+                                        "type": decl.Promise(promise_id),
+                                    },
+                                    "set": {
+                                        "_type": "Property",
+                                        "kind": "ASSOCIATION",
+                                        "min_card": decl.NewObject(
+                                            "LiteralNumericValue", value="1"
+                                        ),
+                                        "max_card": decl.NewObject(
+                                            "LiteralNumericValue", value="1"
+                                        ),
+                                    },
                                 }
                             ],
                         },
@@ -186,22 +192,27 @@ class Importer:
     def _convert_enum(self, prefix: str, enum: dict) -> dict:
         promise_id = f"{prefix}.{enum['name']}"
         self._promise_ids[promise_id] = None
+        literals = []
+        for literal in enum.get("enumLiterals", []):
+            literal_yml = {
+                "find": {"name": literal["name"]},
+                "set": {
+                    "description": _get_description(literal),
+                    "value": decl.NewObject(
+                        "LiteralNumericValue",
+                        value=str(literal["intId"]),
+                    ),
+                },
+            }
+            literals.append(literal_yml)
         yml = {
             "promise_id": promise_id,
             "find": {"name": enum["name"]},
             "set": {
                 "description": _get_description(enum),
-                "literals": [
-                    {
-                        "name": literal["name"],
-                        "description": _get_description(literal),
-                        "value": decl.NewObject(
-                            "LiteralNumericValue",
-                            value=str(literal["intId"]),
-                        ),
-                    }
-                    for literal in enum.get("enumLiterals", [])
-                ],
+            },
+            "sync": {
+                "literals": literals,
             },
         }
         return yml

@@ -62,16 +62,19 @@
                       set:
                           navigable_members:
                               - !promise package2.MyOtherClass.attr1
+                      sync:
                           members:
-                              - _type: Property
-                                type: !promise package2.MyOtherClass
-                                kind: ASSOCIATION
-                                min_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
-                                max_card: !new_object
-                                    _type: LiteralNumericValue
-                                    value: "1"
+                              - find:
+                                    type: !promise package2.MyOtherClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
 
 - parent: !uuid "00000000-0000-0000-0000-000000000001"
   sync:

@@ -71,7 +71,7 @@
                 "-i",
                 "local_data/dm_files/infra.json",
                 "-m",
-                "local_data/workspace_Local_Test_/workspace/Local_Test_",
+                "local_data/new_model/workspace/Local_Test_",
                 "-r",
                 "8413f173-f99b-411b-a5d8-f05a217eb96c",
                 "-t",

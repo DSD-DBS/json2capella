@@ -326,17 +326,23 @@ class TestClass:
                     "navigable_members": [
                         decl.Promise("my_package.MyClass.attr1")
                     ],
+                },
+                "sync": {
                     "members": [
                         {
-                            "_type": "Property",
-                            "type": decl.Promise("my_package.MyClass"),
-                            "kind": "ASSOCIATION",
-                            "min_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
-                            "max_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
+                            "find": {
+                                "type": decl.Promise("my_package.MyClass"),
+                            },
+                            "set": {
+                                "_type": "Property",
+                                "kind": "ASSOCIATION",
+                                "min_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                                "max_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                            },
                         }
                     ],
                 },
@@ -407,17 +413,23 @@ class TestClass:
                     "navigable_members": [
                         decl.Promise("my_package.MyClass.attr1")
                     ],
+                },
+                "sync": {
                     "members": [
                         {
-                            "_type": "Property",
-                            "type": decl.Promise("my_package.MyClass"),
-                            "kind": "ASSOCIATION",
-                            "min_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
-                            "max_card": decl.NewObject(
-                                "LiteralNumericValue", value="1"
-                            ),
+                            "find": {
+                                "type": decl.Promise("my_package.MyClass"),
+                            },
+                            "set": {
+                                "_type": "Property",
+                                "kind": "ASSOCIATION",
+                                "min_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                                "max_card": decl.NewObject(
+                                    "LiteralNumericValue", value="1"
+                                ),
+                            },
                         }
                     ],
                 },
