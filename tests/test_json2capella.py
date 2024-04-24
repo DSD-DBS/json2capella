@@ -110,21 +110,41 @@ def test_convert_enum(importer):
         },
         "set": {
             "description": "This is MyEnum info.",
+        },
+        "sync": {
             "literals": [
                 {
-                    "name": "enumLiteral0",
-                    "description": "",
-                    "value": decl.NewObject("LiteralNumericValue", value="0"),
+                    "find": {
+                        "name": "enumLiteral0",
+                    },
+                    "set": {
+                        "description": "",
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value="0"
+                        ),
+                    },
                 },
                 {
-                    "name": "enumLiteral1",
-                    "description": "",
-                    "value": decl.NewObject("LiteralNumericValue", value="1"),
+                    "find": {
+                        "name": "enumLiteral1",
+                    },
+                    "set": {
+                        "description": "",
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value="1"
+                        ),
+                    },
                 },
                 {
-                    "name": "enumLiteral2",
-                    "description": "",
-                    "value": decl.NewObject("LiteralNumericValue", value="2"),
+                    "find": {
+                        "name": "enumLiteral2",
+                    },
+                    "set": {
+                        "description": "",
+                        "value": decl.NewObject(
+                            "LiteralNumericValue", value="2"
+                        ),
+                    },
                 },
             ],
         },
@@ -320,9 +340,6 @@ class TestClass:
         expected_associations = [
             {
                 "find": {
-                    "name": "my_package.MyClass.attr1",
-                },
-                "set": {
                     "navigable_members": [
                         decl.Promise("my_package.MyClass.attr1")
                     ],
@@ -407,9 +424,6 @@ class TestClass:
         expected_associations = [
             {
                 "find": {
-                    "name": "my_package.MyClass.attr1",
-                },
-                "set": {
                     "navigable_members": [
                         decl.Promise("my_package.MyClass.attr1")
                     ],

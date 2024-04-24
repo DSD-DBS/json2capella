@@ -58,8 +58,6 @@
                                         value: "1"
                 owned_associations:
                     - find:
-                          name: package2.MyOtherClass.attr1
-                      set:
                           navigable_members:
                               - !promise package2.MyOtherClass.attr1
                       sync:
