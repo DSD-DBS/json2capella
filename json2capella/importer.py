@@ -148,9 +148,6 @@ class Importer:
                 associations.append(
                     {
                         "find": {
-                            "name": attr_promise_id,
-                        },
-                        "set": {
                             "navigable_members": [
                                 decl.Promise(attr_promise_id)
                             ],
