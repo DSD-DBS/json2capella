@@ -40,19 +40,19 @@ from . import logger
     "-l",
     "--layer",
     type=click.Choice(["oa", "la", "sa", "pa"], case_sensitive=False),
-    help="The layer to import the messages to.",
+    help="The layer to import the JSON to.",
 )
 @click.option(
     "-r",
     "--root",
     type=click.UUID,
-    help="The UUID of the root package to import the messages to.",
+    help="The UUID of the root package to import the JSON to.",
 )
 @click.option(
     "-t",
     "--types",
     type=click.UUID,
-    help="The UUID of the types package to import the created data types to.",
+    help="The UUID of the types package to import the generated data types to.",
 )
 @click.option(
     "-o",
