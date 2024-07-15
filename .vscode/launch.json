@@ -1,0 +1,82 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Import local to empty",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "tests/data/example_jsons",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "la"
+            ]
+        },
+        {
+            "name": "Import remote to empty",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "git+https://github.com/DSD-DBS/dsd-ros-msg-definitions-oss",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "la"
+            ]
+        },
+        {
+            "name": "Import dm_files to empty",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "local_data/dm_files",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "sa"
+            ]
+        },
+        {
+            "name": "Import infra to empty",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "local_data/infra.json",
+                "-m",
+                "tests/data/empty_project_60",
+                "-l",
+                "sa"
+            ]
+        },
+        {
+            "name": "Import infra to existing",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "json2capella",
+            "justMyCode": false,
+            "args": [
+                "-i",
+                "local_data/dm_files/infra.json",
+                "-m",
+                "local_data/new_model/workspace/Local_Test_",
+                "-r",
+                "8413f173-f99b-411b-a5d8-f05a217eb96c",
+                "-t",
+                "cb436f6c-8d0f-4e6c-b6e7-ae1634a1987b"
+            ]
+        }
+    ]
+}

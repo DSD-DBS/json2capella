@@ -28,7 +28,9 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
+  "capellambse",
   "click",
+
 ]
 
 [project.urls]

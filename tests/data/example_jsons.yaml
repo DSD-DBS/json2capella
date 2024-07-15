@@ -1,0 +1,87 @@
+# Copyright DB InfraGO AG and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+- parent: !uuid "00000000-0000-0000-0000-000000000000"
+  sync:
+      packages:
+          - find:
+                name: package1
+            set:
+                description: "This is package1 info."
+            sync:
+                classes:
+                    - promise_id: package1.MyClass
+                      find:
+                          name: MyClass
+                      set:
+                          description: "This is MyClass info."
+                      sync:
+                          properties:
+                              - promise_id: package1.MyClass.attr1
+                                find:
+                                    name: attr1
+                                set:
+                                    description: "This is attr1 info."
+                                    kind: COMPOSITION
+                                    type: !promise datatype.uint8
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+          - find:
+                name: package2
+            set:
+                description: "This is package2 info."
+            sync:
+                classes:
+                    - promise_id: package2.MyOtherClass
+                      find:
+                          name: MyOtherClass
+                      set:
+                          description: "This is MyOtherClass info."
+                      sync:
+                          properties:
+                              - promise_id: package2.MyOtherClass.attr1
+                                find:
+                                    name: attr1
+                                set:
+                                    description: "This is attr1 info."
+                                    kind: ASSOCIATION
+                                    type: !promise package1.MyClass
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                owned_associations:
+                    - find:
+                          navigable_members:
+                              - !promise package2.MyOtherClass.attr1
+                      sync:
+                          members:
+                              - find:
+                                    type: !promise package2.MyOtherClass
+                                set:
+                                    _type: Property
+                                    kind: ASSOCIATION
+                                    min_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+                                    max_card: !new_object
+                                        _type: LiteralNumericValue
+                                        value: "1"
+
+- parent: !uuid "00000000-0000-0000-0000-000000000001"
+  sync:
+      packages:
+          - find:
+                name: "Data Types"
+            sync:
+                datatypes:
+                    - promise_id: datatype.uint8
+                      find:
+                          name: uint8
+                          _type: NumericType
