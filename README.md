@@ -3,16 +3,38 @@
  ~ SPDX-License-Identifier: Apache-2.0
  -->
 
-# json2capella
+# JSON2Capella
 
 ![image](https://github.com/DSD-DBS/json2capella/actions/workflows/build-test-publish.yml/badge.svg)
 ![image](https://github.com/DSD-DBS/json2capella/actions/workflows/lint.yml/badge.svg)
 
-Importing JSON into Capella Data package
+Command-line tool for importing package definitions from JSON files into a Capella model's data package.
+
+![Showcase](https://i.imgur.com/Qwzm0In.gif)
 
 # Documentation
 
 Read the [full documentation on Github pages](https://dsd-dbs.github.io/json2capella).
+
+# Examples
+
+Apply package definition from .json file to Capella model layer's root data package:
+
+```sh
+python -m json2capella \
+-i tests/data/example_jsons/package1.json \
+-m tests/data/empty_project_60 \
+-l la \
+```
+
+Import package definitions from folder with .json files to Capella model layer's root data package:
+
+```sh
+python -m json2capella \
+-i tests/data/example_jsons \
+-m tests/data/empty_project_60 \
+-l la
+```
 
 # Installation
 
