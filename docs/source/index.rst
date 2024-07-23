@@ -16,33 +16,20 @@ Overview
 
 **Date**: |today| **Version**: |Version|
 
-JSON2Capella is a tool to import data from JSON files into a Capella model's data package.
-
-Usage
-=====
-
-.. code-block:: bash
-
-   $ python -m json2capella  -i <INPUT> -m <MODEL> -l <LAYER>
-
-*  **-i/--input**, path to JSON file or folder with JSON files.
-*  **-m/--model**, path to the Capella model.
-*  **-l/--layer**, layer to import the JSON to.
-*  **-r/--root**, UUID of the root package to import the JSON to.
-*  **-t/--types**, UUID of the types package to import the generated data types to.
-*  **-o/--output**, path to output decl YAML.
+JSON2Capella is a command-line application to import package definitions from JSON files into a Capella model's data package.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   usage
+   examples
 
 .. toctree::
    :maxdepth: 3
    :caption: API reference
 
    code/modules
-
-
 
 Indices and tables
 ==================

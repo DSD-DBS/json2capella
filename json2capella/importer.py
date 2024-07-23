@@ -260,7 +260,7 @@ class Importer:
                     "sync": {"datatypes": datatypes},
                 }
             )
-        elif types_parent_uuid:
+        else:
             instructions.append(
                 {
                     "parent": decl.UUIDReference(
@@ -275,10 +275,6 @@ class Importer:
                         ],
                     },
                 }
-            )
-        else:
-            raise ValueError(
-                "Either types_parent_uuid or types_uuid must be provided"
             )
         return decl.dump(instructions)
 
