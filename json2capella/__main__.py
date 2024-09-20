@@ -3,6 +3,7 @@
 """Main entry point into json2capella."""
 
 import io
+import logging
 import pathlib
 import typing as t
 
@@ -14,7 +15,7 @@ from capellambse import cli_helpers, decl, helpers
 import json2capella
 from json2capella import importer
 
-from . import logger
+logger = logging.getLogger(__name__)
 
 
 class _CapellaUUIDParam(click.ParamType):
@@ -84,8 +85,10 @@ def main(
     root: capellambse.helpers.UUIDString,
     types: capellambse.helpers.UUIDString,
     output: pathlib.Path,
-):
+) -> None:
     """Import elements to Capella data package from JSON."""
+
+    logging.basicConfig(level=logging.INFO)
 
     # TODO validate against valid JSON schema
 

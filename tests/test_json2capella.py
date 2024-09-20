@@ -27,7 +27,7 @@ def importer() -> Importer:
 
 class TestDescription:
     @staticmethod
-    def test_get_description():
+    def test_get_description() -> None:
         element = {
             "intId": 0,
             "name": "my_attr",
@@ -41,7 +41,7 @@ class TestDescription:
         assert actual == expected
 
     @staticmethod
-    def test_get_description_extra_info():
+    def test_get_description_extra_info() -> None:
         element = {
             "intId": 0,
             "name": "my_attr",
@@ -63,7 +63,7 @@ class TestDescription:
         assert actual == expected
 
     @staticmethod
-    def test_get_description_no_info():
+    def test_get_description_no_info() -> None:
         element = {
             "intId": 0,
             "name": "my_attr",
@@ -78,7 +78,7 @@ class TestDescription:
         assert actual == expected
 
 
-def test_convert_datatype(importer):
+def test_convert_datatype(importer: Importer) -> None:
     promise_id = "datatype.uint8"
     expected = {
         "promise_id": promise_id,
@@ -93,7 +93,7 @@ def test_convert_datatype(importer):
     assert decl.dump([actual]) == decl.dump([expected])
 
 
-def test_convert_enum(importer):
+def test_convert_enum(importer: Importer) -> None:
     data = {
         "name": "MyEnum",
         "info": "This is MyEnum info.",
@@ -158,7 +158,7 @@ def test_convert_enum(importer):
 
 class TestClass:
     @staticmethod
-    def test_convert_class(importer: Importer):
+    def test_convert_class(importer: Importer) -> None:
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -210,7 +210,9 @@ class TestClass:
         assert not associations
 
     @staticmethod
-    def test_convert_class_with_range_and_multiplicity(importer: Importer):
+    def test_convert_class_with_range_and_multiplicity(
+        importer: Importer,
+    ) -> None:
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -294,7 +296,7 @@ class TestClass:
         assert not associations
 
     @staticmethod
-    def test_convert_class_with_composition(importer: Importer):
+    def test_convert_class_with_composition(importer: Importer) -> None:
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -378,7 +380,7 @@ class TestClass:
         )
 
     @staticmethod
-    def test_convert_class_with_reference(importer: Importer):
+    def test_convert_class_with_reference(importer: Importer) -> None:
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -462,7 +464,7 @@ class TestClass:
         )
 
     @staticmethod
-    def test_convert_class_with_enumType(importer: Importer):
+    def test_convert_class_with_enumType(importer: Importer) -> None:
         data = {
             "name": "MyClass",
             "info": "This is MyClass info.",
@@ -514,7 +516,7 @@ class TestClass:
         assert not associations
 
 
-def test_convert_package():
+def test_convert_package() -> None:
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
     actual = Importer(SAMPLE_PACKAGE_PATH).to_yaml(ROOT, SA_ROOT)
 
