@@ -3,17 +3,35 @@
 """Main entry point into json2capella."""
 
 import io
+import logging
 import pathlib
-import uuid
+import typing as t
 
 import capellambse
 import click
-from capellambse import cli_helpers, decl
+import typing_extensions as te
+from capellambse import cli_helpers, decl, helpers
 
 import json2capella
 from json2capella import importer
 
-from . import logger
+logger = logging.getLogger(__name__)
+
+
+class _CapellaUUIDParam(click.ParamType):
+    name = "UUID"
+
+    def convert(
+        self,
+        value: t.Any,
+        param: click.Parameter | None,
+        ctx: click.Context | None,
+    ) -> capellambse.helpers.UUIDString:
+        del param, ctx
+
+        if not helpers.is_uuid_string(value):
+            self.fail(f"Not a valid UUID: {value!r}")
+        return te.assert_type(value, capellambse.helpers.UUIDString)
 
 
 @click.command()
@@ -45,13 +63,13 @@ from . import logger
 @click.option(
     "-r",
     "--root",
-    type=click.UUID,
+    type=_CapellaUUIDParam(),
     help="The UUID of the root package to import the JSON to.",
 )
 @click.option(
     "-t",
     "--types",
-    type=click.UUID,
+    type=_CapellaUUIDParam(),
     help="The UUID of the types package to import the generated data types to.",
 )
 @click.option(
@@ -64,23 +82,25 @@ def main(
     input: pathlib.Path,
     model: capellambse.MelodyModel,
     layer: str,
-    root: uuid.UUID,
-    types: uuid.UUID,
+    root: capellambse.helpers.UUIDString,
+    types: capellambse.helpers.UUIDString,
     output: pathlib.Path,
-):
+) -> None:
     """Import elements to Capella data package from JSON."""
+
+    logging.basicConfig(level=logging.INFO)
 
     # TODO validate against valid JSON schema
 
     if root:
-        root_uuid = str(root)
+        root_uuid = root
     elif layer:
         root_uuid = getattr(model, layer).data_package.uuid
     else:
         raise click.UsageError("Either --root or --layer must be provided")
 
     if types:
-        params = {"types_uuid": str(types)}
+        params = {"types_uuid": types}
     else:
         params = {"types_parent_uuid": model.sa.data_package.uuid}
 

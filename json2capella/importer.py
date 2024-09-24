@@ -202,7 +202,7 @@ class Importer:
                 },
             }
             literals.append(literal_yml)
-        yml = {
+        return {
             "promise_id": promise_id,
             "find": {"name": enum["name"]},
             "set": {
@@ -212,7 +212,6 @@ class Importer:
                 "literals": literals,
             },
         }
-        return yml
 
     def _convert_datatype(self, promise_id: str) -> dict:
         name = promise_id.split(".", 1)[-1]
@@ -222,14 +221,13 @@ class Importer:
             _type = "BooleanType"
         else:
             _type = "NumericType"
-        yml = {
+        return {
             "promise_id": promise_id,
             "find": {
                 "name": name,
                 "_type": _type,
             },
         }
-        return yml
 
     def to_yaml(
         self,

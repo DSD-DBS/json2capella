@@ -2,9 +2,8 @@
    Copyright DB InfraGO AG and contributors
    SPDX-License-Identifier: Apache-2.0
 
-***********************************************
 Welcome to the JSON2Capella documentation!
-***********************************************
+==========================================
 
 
 Overview
@@ -30,6 +29,8 @@ JSON2Capella is a command-line application to import package definitions from JS
    :caption: API reference
 
    code/modules
+
+
 
 Indices and tables
 ==================
