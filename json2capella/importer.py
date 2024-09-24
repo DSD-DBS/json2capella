@@ -19,7 +19,7 @@ class Importer:
 
     def __init__(self, json_path: pathlib.Path) -> None:
         if json_path.is_dir():
-            files = list(json_path.rglob("*.json"))
+            files = sorted(json_path.rglob("*.json"))
             self.json = {
                 "subPackages": [
                     json.loads(file.read_text()) for file in files
