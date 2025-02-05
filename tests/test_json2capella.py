@@ -6,7 +6,7 @@ import pathlib
 import pytest
 from capellambse import decl, helpers
 
-from json2capella.datatypes import Enum, Struct, StructAttrs
+from json2capella import datatypes
 from json2capella.importer import Importer, _get_description
 
 # pylint: disable=redefined-outer-name
@@ -30,19 +30,23 @@ class TestDescription:
     @staticmethod
     def test_get_description() -> None:
         element = {
+            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "info": "This is my_attr info.",
         }
         expected = "This is my_attr info."
 
-        actual = _get_description(StructAttrs.model_validate(element))
+        actual = _get_description(
+            datatypes.StructAttrs.model_validate(element)
+        )
 
         assert actual == expected
 
     @staticmethod
     def test_get_description_extra_info() -> None:
         element = {
+            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "see": "http://dummy.url",
@@ -57,13 +61,16 @@ class TestDescription:
             "<br><b>unit: </b>m"
         )
 
-        actual = _get_description(StructAttrs.model_validate(element))
+        actual = _get_description(
+            datatypes.StructAttrs.model_validate(element)
+        )
 
         assert actual == expected
 
     @staticmethod
     def test_get_description_no_info() -> None:
         element = {
+            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "unit": "m",
@@ -71,7 +78,9 @@ class TestDescription:
         }
         expected = "<br><b>exp: </b>-3<br><b>unit: </b>m"
 
-        actual = _get_description(StructAttrs.model_validate(element))
+        actual = _get_description(
+            datatypes.StructAttrs.model_validate(element)
+        )
 
         assert actual == expected
 
@@ -107,6 +116,7 @@ def test_convert_enum(importer: Importer) -> None:
             "name": "MyEnum",
         },
         "set": {
+            "name": "MyEnum",
             "description": "This is MyEnum info.",
         },
         "sync": {
@@ -116,6 +126,7 @@ def test_convert_enum(importer: Importer) -> None:
                         "name": "enumLiteral0",
                     },
                     "set": {
+                        "name": "enumLiteral0",
                         "description": "",
                         "value": decl.NewObject(
                             "LiteralNumericValue", value="0"
@@ -127,6 +138,7 @@ def test_convert_enum(importer: Importer) -> None:
                         "name": "enumLiteral1",
                     },
                     "set": {
+                        "name": "enumLiteral1",
                         "description": "",
                         "value": decl.NewObject(
                             "LiteralNumericValue", value="1"
@@ -138,6 +150,7 @@ def test_convert_enum(importer: Importer) -> None:
                         "name": "enumLiteral2",
                     },
                     "set": {
+                        "name": "enumLiteral2",
                         "description": "",
                         "value": decl.NewObject(
                             "LiteralNumericValue", value="2"
@@ -148,7 +161,9 @@ def test_convert_enum(importer: Importer) -> None:
         },
     }
 
-    actual = importer._convert_enum("my_package", Enum.model_validate(data))
+    actual = importer._convert_enum(
+        "my_package", datatypes.Enum.model_validate(data)
+    )
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyEnum" in importer._promise_ids
@@ -162,6 +177,7 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "dataType": "uint8",
                     "info": "This is attr1 info.",
@@ -174,6 +190,7 @@ class TestClass:
                 "name": "MyClass",
             },
             "set": {
+                "name": "MyClass",
                 "description": "This is MyClass info.",
             },
             "sync": {
@@ -184,6 +201,7 @@ class TestClass:
                             "name": "attr1",
                         },
                         "set": {
+                            "name": "attr1",
                             "description": "This is attr1 info.",
                             "kind": "COMPOSITION",
                             "type": decl.Promise("datatype.uint8"),
@@ -200,7 +218,7 @@ class TestClass:
         }
 
         actual, associations = importer._convert_class(
-            "my_package", Struct.model_validate(data)
+            "my_package", datatypes.Struct.model_validate(data)
         )
 
         assert decl.dump([actual]) == decl.dump([expected])
@@ -217,6 +235,7 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "dataType": "uint8",
                     "info": "This is attr1 info.",
@@ -224,6 +243,7 @@ class TestClass:
                     "range": "0..255",
                 },
                 {
+                    "intId": 2,
                     "name": "attr2",
                     "dataType": "uint8",
                     "info": "This is attr2 info.",
@@ -237,6 +257,7 @@ class TestClass:
                 "name": "MyClass",
             },
             "set": {
+                "name": "MyClass",
                 "description": "This is MyClass info.",
             },
             "sync": {
@@ -247,6 +268,7 @@ class TestClass:
                             "name": "attr1",
                         },
                         "set": {
+                            "name": "attr1",
                             "description": "This is attr1 info.",
                             "kind": "COMPOSITION",
                             "type": decl.Promise("datatype.uint8"),
@@ -270,6 +292,7 @@ class TestClass:
                             "name": "attr2",
                         },
                         "set": {
+                            "name": "attr2",
                             "description": "This is attr2 info.",
                             "kind": "COMPOSITION",
                             "type": decl.Promise("datatype.uint8"),
@@ -286,7 +309,7 @@ class TestClass:
         }
 
         actual, associations = importer._convert_class(
-            "my_package", Struct.model_validate(data)
+            "my_package", datatypes.Struct.model_validate(data)
         )
 
         assert decl.dump([actual]) == decl.dump([expected])
@@ -301,6 +324,7 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "composition": "MyOtherClass",
                     "info": "This is attr1 info.",
@@ -313,6 +337,7 @@ class TestClass:
                 "name": "MyClass",
             },
             "set": {
+                "name": "MyClass",
                 "description": "This is MyClass info.",
             },
             "sync": {
@@ -323,6 +348,7 @@ class TestClass:
                             "name": "attr1",
                         },
                         "set": {
+                            "name": "attr1",
                             "kind": "COMPOSITION",
                             "type": decl.Promise("my_package.MyOtherClass"),
                             "description": "This is attr1 info.",
@@ -367,7 +393,7 @@ class TestClass:
         ]
 
         actual_yml, actual_associations = importer._convert_class(
-            "my_package", Struct.model_validate(data)
+            "my_package", datatypes.Struct.model_validate(data)
         )
 
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
@@ -384,6 +410,7 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "reference": "MyOtherClass",
                     "info": "This is attr1 info.",
@@ -396,6 +423,7 @@ class TestClass:
                 "name": "MyClass",
             },
             "set": {
+                "name": "MyClass",
                 "description": "This is MyClass info.",
             },
             "sync": {
@@ -406,6 +434,7 @@ class TestClass:
                             "name": "attr1",
                         },
                         "set": {
+                            "name": "attr1",
                             "kind": "ASSOCIATION",
                             "type": decl.Promise("my_package.MyOtherClass"),
                             "description": "This is attr1 info.",
@@ -450,7 +479,7 @@ class TestClass:
         ]
 
         actual_yml, actual_associations = importer._convert_class(
-            "my_package", Struct.model_validate(data)
+            "my_package", datatypes.Struct.model_validate(data)
         )
 
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
@@ -467,6 +496,7 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "enumType": "MyEnum",
                     "info": "This is attr1 info.",
@@ -479,6 +509,7 @@ class TestClass:
                 "name": "MyClass",
             },
             "set": {
+                "name": "MyClass",
                 "description": "This is MyClass info.",
             },
             "sync": {
@@ -489,6 +520,7 @@ class TestClass:
                             "name": "attr1",
                         },
                         "set": {
+                            "name": "attr1",
                             "kind": "COMPOSITION",
                             "type": decl.Promise("my_package.MyEnum"),
                             "description": "This is attr1 info.",
@@ -505,7 +537,7 @@ class TestClass:
         }
 
         actual, associations = importer._convert_class(
-            "my_package", Struct.model_validate(data)
+            "my_package", datatypes.Struct.model_validate(data)
         )
 
         assert decl.dump([actual]) == decl.dump([expected])
@@ -516,6 +548,8 @@ class TestClass:
 
 def test_convert_package() -> None:
     expected = decl.dump(decl.load(SAMPLE_PACKAGE_YAML))
-    actual = Importer(SAMPLE_PACKAGE_PATH).to_yaml(ROOT, SA_ROOT)
+    actual = Importer(SAMPLE_PACKAGE_PATH).to_yaml(
+        ROOT, types_parent_uuid=SA_ROOT
+    )
 
     assert actual == expected

@@ -7,6 +7,7 @@
           - find:
                 name: package1
             set:
+                name: package1
                 description: "This is package1 info."
             sync:
                 classes:
@@ -14,6 +15,7 @@
                       find:
                           name: MyClass
                       set:
+                          name: MyClass
                           description: "This is MyClass info."
                       sync:
                           properties:
@@ -21,6 +23,7 @@
                                 find:
                                     name: attr1
                                 set:
+                                    name: attr1
                                     description: "This is attr1 info."
                                     kind: COMPOSITION
                                     type: !promise datatype.uint8
@@ -33,6 +36,7 @@
           - find:
                 name: package2
             set:
+                name: package2
                 description: "This is package2 info."
             sync:
                 classes:
@@ -40,6 +44,7 @@
                       find:
                           name: MyOtherClass
                       set:
+                          name: MyOtherClass
                           description: "This is MyOtherClass info."
                       sync:
                           properties:
@@ -47,6 +52,7 @@
                                 find:
                                     name: attr1
                                 set:
+                                    name: attr1
                                     description: "This is attr1 info."
                                     kind: ASSOCIATION
                                     type: !promise package1.MyClass
@@ -79,9 +85,11 @@
       packages:
           - find:
                 name: "Data Types"
-            sync:
-                datatypes:
-                    - promise_id: datatype.uint8
-                      find:
-                          name: uint8
-                          _type: NumericType
+            promise_id: types-package
+- parent: !promise types-package
+  sync:
+      datatypes:
+          - promise_id: datatype.uint8
+            find:
+                name: uint8
+                _type: NumericType
