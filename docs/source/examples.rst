@@ -14,10 +14,10 @@ Import from file
 ----------------
 .. code-block:: bash
 
-   python -m json2capella -i tests/data/example_jsons/package1.json -m tests/data/empty_project_60 -l la
+   python -m json2capella --new tests/data/example_jsons/package1.json --model tests/data/empty_project_60 --layer la
 
 Import from folder
 ------------------
 .. code-block:: bash
 
-   python -m json2capella -i tests/data/example_jsons -m tests/data/empty_project_60 -l la
+   python -m json2capella --new tests/data/example_jsons --model tests/data/empty_project_60 --layer la
