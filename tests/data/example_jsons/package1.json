@@ -8,7 +8,6 @@
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "dataType": "uint8",
                     "info": "This is attr1 info."

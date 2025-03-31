@@ -6,6 +6,7 @@ import pathlib
 import pytest
 from capellambse import decl, helpers
 
+from json2capella.datatypes import Enum, Struct, StructAttrs
 from json2capella.importer import Importer, _get_description
 
 # pylint: disable=redefined-outer-name
@@ -29,21 +30,19 @@ class TestDescription:
     @staticmethod
     def test_get_description() -> None:
         element = {
-            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "info": "This is my_attr info.",
         }
         expected = "This is my_attr info."
 
-        actual = _get_description(element)
+        actual = _get_description(StructAttrs.model_validate(element))
 
         assert actual == expected
 
     @staticmethod
     def test_get_description_extra_info() -> None:
         element = {
-            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "see": "http://dummy.url",
@@ -58,14 +57,13 @@ class TestDescription:
             "<br><b>unit: </b>m"
         )
 
-        actual = _get_description(element)
+        actual = _get_description(StructAttrs.model_validate(element))
 
         assert actual == expected
 
     @staticmethod
     def test_get_description_no_info() -> None:
         element = {
-            "intId": 0,
             "name": "my_attr",
             "dataType": "int32",
             "unit": "m",
@@ -73,7 +71,7 @@ class TestDescription:
         }
         expected = "<br><b>exp: </b>-3<br><b>unit: </b>m"
 
-        actual = _get_description(element)
+        actual = _get_description(StructAttrs.model_validate(element))
 
         assert actual == expected
 
@@ -150,7 +148,7 @@ def test_convert_enum(importer: Importer) -> None:
         },
     }
 
-    actual = importer._convert_enum("my_package", data)
+    actual = importer._convert_enum("my_package", Enum.model_validate(data))
 
     assert decl.dump([actual]) == decl.dump([expected])
     assert "my_package.MyEnum" in importer._promise_ids
@@ -164,7 +162,6 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "dataType": "uint8",
                     "info": "This is attr1 info.",
@@ -202,7 +199,9 @@ class TestClass:
             },
         }
 
-        actual, associations = importer._convert_class("my_package", data)
+        actual, associations = importer._convert_class(
+            "my_package", Struct.model_validate(data)
+        )
 
         assert decl.dump([actual]) == decl.dump([expected])
         assert "my_package.MyClass" in importer._promise_ids
@@ -218,7 +217,6 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "dataType": "uint8",
                     "info": "This is attr1 info.",
@@ -226,7 +224,6 @@ class TestClass:
                     "range": "0..255",
                 },
                 {
-                    "intId": 2,
                     "name": "attr2",
                     "dataType": "uint8",
                     "info": "This is attr2 info.",
@@ -288,7 +285,9 @@ class TestClass:
             },
         }
 
-        actual, associations = importer._convert_class("my_package", data)
+        actual, associations = importer._convert_class(
+            "my_package", Struct.model_validate(data)
+        )
 
         assert decl.dump([actual]) == decl.dump([expected])
         assert "my_package.MyClass" in importer._promise_ids
@@ -302,7 +301,6 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "composition": "MyOtherClass",
                     "info": "This is attr1 info.",
@@ -369,7 +367,7 @@ class TestClass:
         ]
 
         actual_yml, actual_associations = importer._convert_class(
-            "my_package", data
+            "my_package", Struct.model_validate(data)
         )
 
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
@@ -386,7 +384,6 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "reference": "MyOtherClass",
                     "info": "This is attr1 info.",
@@ -453,7 +450,7 @@ class TestClass:
         ]
 
         actual_yml, actual_associations = importer._convert_class(
-            "my_package", data
+            "my_package", Struct.model_validate(data)
         )
 
         assert decl.dump([actual_yml]) == decl.dump([expected_yml])
@@ -470,7 +467,6 @@ class TestClass:
             "info": "This is MyClass info.",
             "attrs": [
                 {
-                    "intId": 1,
                     "name": "attr1",
                     "enumType": "MyEnum",
                     "info": "This is attr1 info.",
@@ -508,7 +504,9 @@ class TestClass:
             },
         }
 
-        actual, associations = importer._convert_class("my_package", data)
+        actual, associations = importer._convert_class(
+            "my_package", Struct.model_validate(data)
+        )
 
         assert decl.dump([actual]) == decl.dump([expected])
         assert "my_package.MyClass" in importer._promise_ids
