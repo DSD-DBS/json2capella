@@ -21,45 +21,81 @@ _AnyJSONType = (
 )
 
 
+def load_json(json_path: pathlib.Path) -> datatypes.Package:
+    """Load JSON data from a file or folder."""
+    if json_path.is_dir():
+        files = sorted(json_path.rglob("*.json"))
+        return datatypes.Package.model_validate(
+            {
+                "name": "JSON root package",
+                "subPackages": [
+                    json.loads(file.read_text()) for file in files
+                ],
+            }
+        )
+    return datatypes.Package.model_validate(json.loads(json_path.read_text()))
+
+
+def get_old_by_id[T: _AnyJSONType](
+    old_jsons: list[T], int_id: int | None
+) -> T | None:
+    """Get an element from the old JSON data by its intId."""
+    if int_id is None:
+        return None
+    return next(
+        (old_json for old_json in old_jsons if old_json.int_id == int_id),
+        None,
+    )
+
+
+def get_name[T: _AnyJSONType](element: T, old_element: T | None) -> str:
+    """Get the name of an element."""
+    if old_element:
+        return old_element.name
+    return element.name
+
+
 class Importer:
     """Class for importing JSON data into a Capella data package."""
 
-    def __init__(self, json_path: pathlib.Path) -> None:
-        if json_path.is_dir():
-            files = sorted(json_path.rglob("*.json"))
-            self.json = datatypes.Package.model_validate(
-                {
-                    "name": "JSON root package",
-                    "subPackages": [
-                        json.loads(file.read_text()) for file in files
-                    ],
-                }
-            )
-        else:
-            self.json = datatypes.Package.model_validate(
-                json.loads(json_path.read_text())
-            )
-
+    def __init__(
+        self,
+        json_path: pathlib.Path,
+        old_json_path: pathlib.Path | None = None,
+    ) -> None:
+        self.json = load_json(json_path)
+        self.old_json = load_json(old_json_path) if old_json_path else None
         self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
         self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
 
-    def _convert_package(self, pkg: datatypes.Package) -> dict[str, t.Any]:
+    def _convert_package(
+        self, pkg: datatypes.Package, old_pkg: datatypes.Package | None = None
+    ) -> dict[str, t.Any]:
+        if old_pkg is None:
+            old_pkg = datatypes.Package(
+                name=pkg.name, subPackages=[], intId=pkg.int_id
+            )
         associations = []
         classes = []
         for cls in pkg.structs:
-            cls_yml, cls_associations = self._convert_class(pkg.prefix, cls)
+            old_cls = get_old_by_id(old_pkg.structs, cls.int_id)
+            cls_yml, cls_associations = self._convert_class(
+                pkg.prefix, cls, old_cls
+            )
             classes.append(cls_yml)
             associations.extend(cls_associations)
-        enums = [
-            self._convert_enum(pkg.prefix, enum_def) for enum_def in pkg.enums
-        ]
+        enums = []
+        for enum_def in pkg.enums:
+            old_enum = get_old_by_id(old_pkg.enums, enum_def.int_id)
+            enums.append(self._convert_enum(pkg.prefix, enum_def, old_enum))
         packages = []
         for sub_pkg in pkg.sub_packages:
+            old_sub_pkg = get_old_by_id(old_pkg.sub_packages, sub_pkg.int_id)
             new_yml = {
                 "find": {
-                    "name": sub_pkg.name,
+                    "name": get_name(sub_pkg, old_sub_pkg),
                 }
-            } | self._convert_package(sub_pkg)
+            } | self._convert_package(sub_pkg, old_sub_pkg)
             packages.append(new_yml)
 
         sync = {}
@@ -72,26 +108,30 @@ class Importer:
         if associations:
             sync["owned_associations"] = associations
 
-        yml: dict = {}
+        result: dict[str, t.Any] = {"sync": sync}
         if desc := _get_description(pkg):
-            yml["set"] = {}
-            yml["set"]["description"] = desc
-        if sync:
-            yml["sync"] = sync
-
-        return yml
+            result.setdefault("set", {})["description"] = desc
+        if pkg is not self.json:
+            result.setdefault("set", {})["name"] = get_name(pkg, old_pkg)
+        return result
 
     def _convert_class(
         self,
         prefix: str,
         cls: datatypes.Struct,
+        old_cls: datatypes.Struct | None = None,
     ) -> tuple[dict, list[dict]]:
+        if old_cls is None:
+            old_cls = datatypes.Struct(
+                name=cls.name, attrs=[], intId=cls.int_id
+            )
         promise_id = f"{prefix}.{cls.name}"
         self._promise_ids[promise_id] = None
         attrs = []
         associations = []
         for attr in cls.attrs:
             attr_yml: dict[str, t.Any] = {
+                "name": attr.name,
                 "description": _get_description(attr),
             }
 
@@ -141,11 +181,12 @@ class Importer:
             )
 
             attr_promise_id = f"{promise_id}.{attr.name}"
+            old_attr = get_old_by_id(old_cls.attrs, attr.int_id)
             attrs.append(
                 {
                     "promise_id": attr_promise_id,
                     "find": {
-                        "name": attr.name,
+                        "name": get_name(attr, old_attr),
                     },
                     "set": attr_yml,
                 }
@@ -183,8 +224,9 @@ class Importer:
 
         yml = {
             "promise_id": promise_id,
-            "find": {"name": cls.name},
+            "find": {"name": get_name(cls, old_cls)},
             "set": {
+                "name": cls.name,
                 "description": _get_description(cls),
             },
             "sync": {
@@ -193,14 +235,25 @@ class Importer:
         }
         return yml, associations
 
-    def _convert_enum(self, prefix: str, enum: datatypes.Enum) -> dict:
+    def _convert_enum(
+        self,
+        prefix: str,
+        enum: datatypes.Enum,
+        old_enum: datatypes.Enum | None = None,
+    ) -> dict:
         promise_id = f"{prefix}.{enum.name}"
         self._promise_ids[promise_id] = None
         literals = []
         for literal in enum.enum_literals:
+            old_literal = (
+                get_old_by_id(old_enum.enum_literals, literal.int_id)
+                if old_enum is not None
+                else None
+            )
             literal_yml = {
-                "find": {"name": literal.name},
+                "find": {"name": get_name(literal, old_literal)},
                 "set": {
+                    "name": literal.name,
                     "description": _get_description(literal),
                     "value": decl.NewObject(
                         "LiteralNumericValue",
@@ -211,8 +264,9 @@ class Importer:
             literals.append(literal_yml)
         return {
             "promise_id": promise_id,
-            "find": {"name": enum.name},
+            "find": {"name": get_name(enum, old_enum)},
             "set": {
+                "name": enum.name,
                 "description": _get_description(enum),
             },
             "sync": {
@@ -239,13 +293,15 @@ class Importer:
     def to_yaml(
         self,
         root_uuid: str,
+        *,
         types_parent_uuid: str = "",
         types_uuid: str = "",
+        is_layer: bool = False,
     ) -> str:
         """Convert JSON data to decl YAML."""
         instructions = [
             {"parent": decl.UUIDReference(helpers.UUIDString(root_uuid))}
-            | self._convert_package(self.json),
+            | self._convert_package(self.json, self.old_json)
         ]
         needed_types = [
             p for p in self._promise_id_refs if p not in self._promise_ids
@@ -257,15 +313,11 @@ class Importer:
             self._convert_datatype(promise_id) for promise_id in needed_types
         ]
         if types_uuid:
-            instructions.append(
-                {
-                    "parent": decl.UUIDReference(
-                        helpers.UUIDString(types_uuid)
-                    ),
-                    "sync": {"datatypes": datatypes},
-                }
-            )
+            types_yaml: dict[str, t.Any] = {
+                "parent": decl.UUIDReference(helpers.UUIDString(types_uuid)),
+            }
         else:
+            types_yaml = {"parent": decl.Promise("types-package")}
             instructions.append(
                 {
                     "parent": decl.UUIDReference(
@@ -275,12 +327,26 @@ class Importer:
                         "packages": [
                             {
                                 "find": {"name": "Data Types"},
-                                "sync": {"datatypes": datatypes},
+                                "promise_id": "types-package",
                             }
                         ],
                     },
                 }
             )
+
+        if is_layer:
+            types_yaml["sync"] = {
+                "packages": [
+                    {
+                        "find": {"name": "Data Types"},
+                        "sync": {"datatypes": datatypes},
+                    }
+                ]
+            }
+        else:
+            types_yaml["sync"] = {"datatypes": datatypes}
+
+        instructions.append(types_yaml)
         return decl.dump(instructions)
 
 

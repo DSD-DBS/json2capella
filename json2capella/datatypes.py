@@ -9,6 +9,7 @@ import pydantic as p
 
 
 class _BaseModel(p.BaseModel):
+    int_id: int | None = p.Field(None, alias="intId")
     name: str
     info: str = ""
     see: str = ""

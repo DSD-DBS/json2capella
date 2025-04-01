@@ -8,6 +8,7 @@
             "info": "This is MyOtherClass info.",
             "attrs": [
                 {
+                    "intId": 1,
                     "name": "attr1",
                     "reference": "package1.MyClass",
                     "info": "This is attr1 info."

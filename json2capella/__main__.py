@@ -41,18 +41,26 @@ class _CapellaUUIDParam(click.ParamType):
     message="%(prog)s %(version)s",
 )
 @click.option(
-    "-i",
-    "--input",
-    type=click.Path(path_type=pathlib.Path, exists=True),
-    required=True,
-    help="Path to JSON file or folder with JSON files.",
-)
-@click.option(
     "-m",
     "--model",
     type=cli_helpers.ModelCLI(),
     required=True,
     help="Path to the Capella model.",
+)
+@click.option(
+    "-n",
+    "--new",
+    type=click.Path(path_type=pathlib.Path, exists=True),
+    required=True,
+    help="Path to JSON file or folder with JSON files "
+    "containing the new model definition.",
+)
+@click.option(
+    "-o",
+    "--old",
+    type=click.Path(path_type=pathlib.Path, exists=True),
+    help="Path to JSON file or folder with JSON files. "
+    "containing the old model definition.",
 )
 @click.option(
     "-l",
@@ -73,18 +81,19 @@ class _CapellaUUIDParam(click.ParamType):
     help="The UUID of the types package to import the generated data types to.",
 )
 @click.option(
-    "-o",
-    "--output",
+    "--yaml",
     type=click.Path(path_type=pathlib.Path, dir_okay=False),
     help="Output file path for decl YAML.",
 )
 def main(
-    input: pathlib.Path,
     model: capellambse.MelodyModel,
+    new: pathlib.Path,
+    *,
+    old: pathlib.Path,
     layer: str,
     root: capellambse.helpers.UUIDString,
     types: capellambse.helpers.UUIDString,
-    output: pathlib.Path,
+    yaml: pathlib.Path,
 ) -> None:
     """Import elements to Capella data package from JSON."""
 
@@ -99,19 +108,21 @@ def main(
     else:
         raise click.UsageError("Either --root or --layer must be provided")
 
+    params: dict[str, t.Any] = {}
     if types:
-        params = {"types_uuid": types}
+        params["types_uuid"] = types
     else:
-        params = {"types_parent_uuid": model.sa.data_package.uuid}
+        params["types_uuid"] = model.sa.data_package.uuid
+        params["is_layer"] = True
 
-    yml = importer.Importer(input).to_yaml(root_uuid, **params)
-    if output:
-        logger.info("Writing to file %s", output)
-        output.write_text(yml, encoding="utf-8")
-    else:
-        logger.info("Writing to model %s", model.name)
-        decl.apply(model, io.StringIO(yml))
-        model.save()
+    yml = importer.Importer(new, old).to_yaml(root_uuid, **params)
+
+    if yaml:
+        logger.info("Writing to file %s", yaml)
+        yaml.write_text(yml, encoding="utf-8")
+    logger.info("Writing to model %s", model.name)
+    decl.apply(model, io.StringIO(yml))
+    model.save()
 
 
 if __name__ == "__main__":
