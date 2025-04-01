@@ -3,15 +3,22 @@
 """Tool for importing JSON data into a Capella data package."""
 
 import collections as c
+import html
 import json
 import pathlib
-import re
 import typing as t
 
 from capellambse import decl, helpers
 
-VALID_RANGE_PATTERN = re.compile(r"^(-?\d+)\.\.(-?\d+|\*)$")
-VALID_CARD_PATTERN = re.compile(r"^(\d+)(?:\.\.(\d+|\*))?$")
+from . import datatypes
+
+_AnyJSONType = (
+    datatypes.Enum
+    | datatypes.EnumLiteral
+    | datatypes.Package
+    | datatypes.Struct
+    | datatypes.StructAttrs
+)
 
 
 class Importer:
@@ -20,37 +27,39 @@ class Importer:
     def __init__(self, json_path: pathlib.Path) -> None:
         if json_path.is_dir():
             files = sorted(json_path.rglob("*.json"))
-            self.json = {
-                "subPackages": [
-                    json.loads(file.read_text()) for file in files
-                ],
-            }
+            self.json = datatypes.Package.model_validate(
+                {
+                    "name": "JSON root package",
+                    "subPackages": [
+                        json.loads(file.read_text()) for file in files
+                    ],
+                }
+            )
         else:
-            self.json = json.loads(json_path.read_text())
+            self.json = datatypes.Package.model_validate(
+                json.loads(json_path.read_text())
+            )
 
         self._promise_ids: c.OrderedDict[str, None] = c.OrderedDict()
         self._promise_id_refs: c.OrderedDict[str, None] = c.OrderedDict()
 
-    def _convert_package(self, pkg: dict[str, t.Any]) -> dict[str, t.Any]:
+    def _convert_package(self, pkg: datatypes.Package) -> dict[str, t.Any]:
         associations = []
         classes = []
-        for cls in pkg.get("structs", []):
-            cls_yml, cls_associations = self._convert_class(pkg["prefix"], cls)
+        for cls in pkg.structs:
+            cls_yml, cls_associations = self._convert_class(pkg.prefix, cls)
             classes.append(cls_yml)
             associations.extend(cls_associations)
         enums = [
-            self._convert_enum(pkg["prefix"], enum_def)
-            for enum_def in pkg.get("enums", [])
+            self._convert_enum(pkg.prefix, enum_def) for enum_def in pkg.enums
         ]
         packages = []
-        for new_pkg in pkg.get("subPackages", []):
-            if any(k not in new_pkg for k in ["prefix", "name"]):
-                continue
+        for sub_pkg in pkg.sub_packages:
             new_yml = {
                 "find": {
-                    "name": new_pkg["name"],
+                    "name": sub_pkg.name,
                 }
-            } | self._convert_package(new_pkg)
+            } | self._convert_package(sub_pkg)
             packages.append(new_yml)
 
         sync = {}
@@ -73,41 +82,41 @@ class Importer:
         return yml
 
     def _convert_class(
-        self, prefix: str, cls: dict
+        self,
+        prefix: str,
+        cls: datatypes.Struct,
     ) -> tuple[dict, list[dict]]:
-        promise_id = f"{prefix}.{cls['name']}"
+        promise_id = f"{prefix}.{cls.name}"
         self._promise_ids[promise_id] = None
         attrs = []
         associations = []
-        for attr in cls.get("attrs", []):
+        for attr in cls.attrs:
             attr_yml: dict[str, t.Any] = {
                 "description": _get_description(attr),
             }
 
             attr_yml["kind"] = (
-                "ASSOCIATION" if "reference" in attr else "COMPOSITION"
+                "ASSOCIATION" if attr.reference is not None else "COMPOSITION"
             )
-            match attr:
-                case {"dataType": ref}:
-                    ref = f"datatype.{ref}"
-                case (
-                    {"reference": ref}
-                    | {"composition": ref}
-                    | {"enumType": ref}
-                ):
-                    if "." not in ref:
-                        ref = f"{prefix}.{ref}"
+            if attr.data_type is not None:
+                ref = f"datatype.{attr.data_type}"
+            elif raw_ref := (
+                attr.reference or attr.composition or attr.enum_type
+            ):
+                if "." in raw_ref:
+                    ref = raw_ref
+                else:
+                    ref = f"{prefix}.{raw_ref}"
+            else:
+                raise ValueError(
+                    "struct attributes need exactly one of dataType, reference, composition or enumType"
+                )
 
             attr_yml["type"] = decl.Promise(ref)
             self._promise_id_refs[ref] = None
 
-            if value_range := attr.get("range"):
-                if not (match := VALID_RANGE_PATTERN.match(value_range)):
-                    raise ValueError(
-                        "Invalid value range, "
-                        f"expected format A..B: {value_range}"
-                    )
-                min_val, max_val = match.groups()
+            if value_range := attr.range:
+                min_val, _, max_val = value_range.partition("..")
                 attr_yml["min_value"] = decl.NewObject(
                     "LiteralNumericValue", value=min_val
                 )
@@ -115,17 +124,15 @@ class Importer:
                     "LiteralNumericValue", value=max_val
                 )
 
-            if multiplicity := attr.get("multiplicity"):
-                if not (match := VALID_CARD_PATTERN.match(multiplicity)):
-                    raise ValueError(
-                        "Invalid multiplicity, "
-                        f"expected digits: {multiplicity}"
-                    )
-                min_card, max_card = match.groups()
-                if not max_card:
-                    max_card = min_card
-            else:
+            if not attr.multiplicity:
                 min_card = max_card = "1"
+            elif ".." in attr.multiplicity:
+                min_card, _, max_card = attr.multiplicity.partition("..")
+            elif attr.multiplicity == "*":
+                min_card = "0"
+                max_card = "*"
+            else:
+                min_card = max_card = attr.multiplicity
             attr_yml["min_card"] = decl.NewObject(
                 "LiteralNumericValue", value=min_card
             )
@@ -133,18 +140,18 @@ class Importer:
                 "LiteralNumericValue", value=max_card
             )
 
-            attr_promise_id = f"{promise_id}.{attr['name']}"
+            attr_promise_id = f"{promise_id}.{attr.name}"
             attrs.append(
                 {
                     "promise_id": attr_promise_id,
                     "find": {
-                        "name": attr["name"],
+                        "name": attr.name,
                     },
                     "set": attr_yml,
                 }
             )
 
-            if "reference" in attr or "composition" in attr:
+            if attr.reference is not None or attr.composition is not None:
                 associations.append(
                     {
                         "find": {
@@ -176,7 +183,7 @@ class Importer:
 
         yml = {
             "promise_id": promise_id,
-            "find": {"name": cls["name"]},
+            "find": {"name": cls.name},
             "set": {
                 "description": _get_description(cls),
             },
@@ -186,25 +193,25 @@ class Importer:
         }
         return yml, associations
 
-    def _convert_enum(self, prefix: str, enum: dict) -> dict:
-        promise_id = f"{prefix}.{enum['name']}"
+    def _convert_enum(self, prefix: str, enum: datatypes.Enum) -> dict:
+        promise_id = f"{prefix}.{enum.name}"
         self._promise_ids[promise_id] = None
         literals = []
-        for literal in enum.get("enumLiterals", []):
+        for literal in enum.enum_literals:
             literal_yml = {
-                "find": {"name": literal["name"]},
+                "find": {"name": literal.name},
                 "set": {
                     "description": _get_description(literal),
                     "value": decl.NewObject(
                         "LiteralNumericValue",
-                        value=str(literal["intId"]),
+                        value=str(literal.int_id),
                     ),
                 },
             }
             literals.append(literal_yml)
         return {
             "promise_id": promise_id,
-            "find": {"name": enum["name"]},
+            "find": {"name": enum.name},
             "set": {
                 "description": _get_description(enum),
             },
@@ -277,12 +284,14 @@ class Importer:
         return decl.dump(instructions)
 
 
-def _get_description(element: dict) -> str:
-    description = element.get("info", "")
-    if see := element.get("see", ""):
+def _get_description(element: _AnyJSONType) -> str:
+    description = element.info
+    if element.see:
+        see = html.escape(element.see)
         description += f"<br><b>see: </b><a href='{see}'>{see}</a>"
-    if exp := element.get("exp", ""):
-        description += f"<br><b>exp: </b>{exp}"
-    if unit := element.get("unit", ""):
-        description += f"<br><b>unit: </b>{unit}"
+    if isinstance(element, datatypes.StructAttrs):
+        if element.exp is not None:
+            description += f"<br><b>exp: </b>{element.exp}"
+        if element.unit is not None:
+            description += f"<br><b>unit: </b>{element.unit}"
     return description
