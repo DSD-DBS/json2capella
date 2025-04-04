@@ -220,7 +220,7 @@ class Importer:
                     }
                 )
 
-        yml = {
+        yml: t.Any = {
             "promise_id": promise_id,
             "find": {"name": get_name(cls, old_cls)},
             "set": {
@@ -231,6 +231,13 @@ class Importer:
                 "owned_properties": attrs,
             },
         }
+
+        if cls.extends:
+            if "." not in cls.extends:
+                yml["set"]["super"] = decl.Promise(f"{prefix}.{cls.extends}")
+            else:
+                yml["set"]["super"] = decl.Promise(cls.extends)
+
         return yml, associations
 
     def _convert_enum(

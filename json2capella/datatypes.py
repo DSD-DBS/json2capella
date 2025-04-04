@@ -33,7 +33,21 @@ class EnumLiteral(_BaseModel):
 
 
 class Struct(_BaseModel):
+    extends: str | None = None
     attrs: list[StructAttrs] = []
+
+    @p.field_validator("extends")
+    @classmethod
+    def extends_is_valid_dotted_name(cls, value: str) -> str:
+        numdots = sum(1 for char in value if char == ".")
+        if numdots not in (0, 1):
+            raise ValueError(
+                "Invalid extends, expected 'Class' or 'prefix.Class':"
+                f" {value!r}"
+            )
+        if value.startswith(".") or value.endswith("."):
+            raise ValueError("'extends' value cannot start or end with '.'")
+        return value
 
 
 class StructAttrs(_BaseModel):

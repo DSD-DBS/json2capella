@@ -1,6 +1,8 @@
 # Copyright DB InfraGO AG and contributors
 # SPDX-License-Identifier: Apache-2.0
 
+import io
+import json
 import pathlib
 
 import pytest
@@ -544,6 +546,103 @@ class TestClass:
         assert "my_package.MyClass" in importer._promise_ids
         assert "my_package.MyEnum" in importer._promise_id_refs
         assert not associations
+
+    @staticmethod
+    def test_undotted_extends_maps_to_super(tmp_path: pathlib.Path) -> None:
+        datafile = tmp_path / "data.json"
+
+        animal = {"name": "Animal"}
+        cat = {"name": "Cat", "extends": "test.Animal"}
+        pkg = {"name": "test", "prefix": "test", "structs": [animal, cat]}
+        datafile.write_text(json.dumps(pkg))
+
+        expected = f"""\
+            - parent: !uuid {ROOT}
+              sync:
+                classes:
+                  - find:
+                      name: Animal
+                    promise_id: test.Animal
+                    set:
+                      name: Animal
+                      description: ""
+                    sync:
+                      owned_properties: []
+                  - find:
+                      name: Cat
+                    promise_id: test.Cat
+                    set:
+                      name: Cat
+                      description: ""
+                      super: !promise test.Animal
+                    sync:
+                      owned_properties: []
+            """
+        expected = decl.dump(decl.load(io.StringIO(expected)))
+
+        actual = Importer(datafile).to_yaml(ROOT)
+
+        assert actual == expected
+
+    @staticmethod
+    def test_dotted_extends_maps_to_super(tmp_path: pathlib.Path) -> None:
+        tmp_path.joinpath("pkgs").mkdir()
+
+        animal = {"name": "Animal"}
+        pkg = {
+            "name": "Base classes",
+            "prefix": "basecls",
+            "structs": [animal],
+        }
+        tmp_path.joinpath("pkgs", "basecls.json").write_text(json.dumps(pkg))
+
+        cat = {"name": "Cat", "extends": "basecls.Animal"}
+        pkg = {
+            "name": "Subclasses",
+            "prefix": "subcls",
+            "structs": [cat],
+        }
+        tmp_path.joinpath("pkgs", "subcls.json").write_text(json.dumps(pkg))
+
+        expected = f"""\
+            - parent: !uuid {ROOT}
+              sync:
+                packages:
+                  - find:
+                      name: Base classes
+                    set:
+                      name: Base classes
+                    sync:
+                      classes:
+                        - find:
+                            name: Animal
+                          promise_id: basecls.Animal
+                          set:
+                            name: Animal
+                            description: ""
+                          sync:
+                            owned_properties: []
+                  - find:
+                      name: Subclasses
+                    set:
+                      name: Subclasses
+                    sync:
+                      classes:
+                        - find:
+                            name: Cat
+                          promise_id: subcls.Cat
+                          set:
+                            name: Cat
+                            description: ""
+                            super: !promise basecls.Animal
+                          sync:
+                            owned_properties: []
+            """
+        expected = decl.dump(decl.load(io.StringIO(expected)))
+
+        actual = Importer(tmp_path).to_yaml(ROOT)
+
+        assert actual == expected
 
 
 def test_convert_package() -> None:
