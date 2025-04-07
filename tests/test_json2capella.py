@@ -194,7 +194,7 @@ class TestClass:
                 "description": "This is MyClass info.",
             },
             "sync": {
-                "properties": [
+                "owned_properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
                         "find": {
@@ -261,7 +261,7 @@ class TestClass:
                 "description": "This is MyClass info.",
             },
             "sync": {
-                "properties": [
+                "owned_properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
                         "find": {
@@ -341,7 +341,7 @@ class TestClass:
                 "description": "This is MyClass info.",
             },
             "sync": {
-                "properties": [
+                "owned_properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
                         "find": {
@@ -427,7 +427,7 @@ class TestClass:
                 "description": "This is MyClass info.",
             },
             "sync": {
-                "properties": [
+                "owned_properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
                         "find": {
@@ -513,7 +513,7 @@ class TestClass:
                 "description": "This is MyClass info.",
             },
             "sync": {
-                "properties": [
+                "owned_properties": [
                     {
                         "promise_id": "my_package.MyClass.attr1",
                         "find": {

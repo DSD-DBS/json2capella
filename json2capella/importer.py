@@ -228,7 +228,7 @@ class Importer:
                 "description": _get_description(cls),
             },
             "sync": {
-                "properties": attrs,
+                "owned_properties": attrs,
             },
         }
         return yml, associations

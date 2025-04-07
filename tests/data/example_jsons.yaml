@@ -18,7 +18,7 @@
                           name: MyClass
                           description: "This is MyClass info."
                       sync:
-                          properties:
+                          owned_properties:
                               - promise_id: package1.MyClass.attr1
                                 find:
                                     name: attr1
@@ -47,7 +47,7 @@
                           name: MyOtherClass
                           description: "This is MyOtherClass info."
                       sync:
-                          properties:
+                          owned_properties:
                               - promise_id: package2.MyOtherClass.attr1
                                 find:
                                     name: attr1
