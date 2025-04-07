@@ -73,10 +73,7 @@ class Importer:
     ) -> dict[str, t.Any]:
         if old_pkg is None:
             old_pkg = datatypes.Package(
-                name=pkg.name,
-                prefix=pkg.prefix,
-                subPackages=[],
-                intId=pkg.int_id,
+                name=pkg.name, prefix=pkg.prefix, int_id=pkg.int_id
             )
         associations = []
         classes = []
@@ -125,9 +122,7 @@ class Importer:
         old_cls: datatypes.Struct | None = None,
     ) -> tuple[dict, list[dict]]:
         if old_cls is None:
-            old_cls = datatypes.Struct(
-                name=cls.name, attrs=[], intId=cls.int_id
-            )
+            old_cls = datatypes.Struct(name=cls.name, int_id=cls.int_id)
         promise_id = f"{prefix}.{cls.name}"
         self._promise_ids[promise_id] = None
         attrs = []
