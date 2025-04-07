@@ -82,8 +82,9 @@ class _CapellaUUIDParam(click.ParamType):
 )
 @click.option(
     "--yaml",
+    "output",
     type=click.Path(path_type=pathlib.Path, dir_okay=False),
-    help="Output file path for decl YAML.",
+    help="Write decl YAML into this file instead of modifying the model directly.",
 )
 def main(
     model: capellambse.MelodyModel,
@@ -93,13 +94,11 @@ def main(
     layer: str,
     root: capellambse.helpers.UUIDString,
     types: capellambse.helpers.UUIDString,
-    yaml: pathlib.Path,
+    output: pathlib.Path,
 ) -> None:
     """Import elements to Capella data package from JSON."""
 
     logging.basicConfig(level=logging.INFO)
-
-    # TODO validate against valid JSON schema
 
     if root:
         root_uuid = root
@@ -117,12 +116,13 @@ def main(
 
     yml = importer.Importer(new, old).to_yaml(root_uuid, **params)
 
-    if yaml:
-        logger.info("Writing to file %s", yaml)
-        yaml.write_text(yml, encoding="utf-8")
-    logger.info("Writing to model %s", model.name)
-    decl.apply(model, io.StringIO(yml))
-    model.save()
+    if output:
+        logger.info("Writing to file %s", output)
+        output.write_text(yml, encoding="utf-8")
+    else:
+        logger.info("Writing to model %s", model.name)
+        decl.apply(model, io.StringIO(yml))
+        model.save()
 
 
 if __name__ == "__main__":
