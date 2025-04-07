@@ -29,6 +29,7 @@ def load_json(json_path: pathlib.Path) -> datatypes.Package:
         return datatypes.Package.model_validate(
             {
                 "name": "JSON root package",
+                "prefix": "json_root_package",
                 "subPackages": [
                     json.loads(file.read_text()) for file in files
                 ],
@@ -72,7 +73,10 @@ class Importer:
     ) -> dict[str, t.Any]:
         if old_pkg is None:
             old_pkg = datatypes.Package(
-                name=pkg.name, subPackages=[], intId=pkg.int_id
+                name=pkg.name,
+                prefix=pkg.prefix,
+                subPackages=[],
+                intId=pkg.int_id,
             )
         associations = []
         classes = []

@@ -19,7 +19,7 @@ class Package(_BaseModel):
     sub_packages: list[Package] = p.Field([], alias="subPackages")
     structs: list[Struct] = []
     enums: list[Enum] = []
-    prefix: str = ""
+    prefix: str = p.Field(min_length=1)
 
 
 class Enum(_BaseModel):
