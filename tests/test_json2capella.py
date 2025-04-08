@@ -15,7 +15,7 @@ PATH = pathlib.Path(__file__).parent
 
 SAMPLE_PACKAGE_PATH = PATH.joinpath("data/example_jsons")
 SAMPLE_PACKAGE_YAML = PATH.joinpath("data/example_jsons.yaml")
-DUMMY_PATH = PATH.joinpath("data/empty_project_60")
+DUMMY_PATH = PATH.joinpath("data/empty_project")
 
 ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000000")
 SA_ROOT = helpers.UUIDString("00000000-0000-0000-0000-000000000001")
