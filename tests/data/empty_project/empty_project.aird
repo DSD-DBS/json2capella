@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:description="http://www.eclipse.org/sirius/description/1.1.0" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xsi:schemaLocation="http://www.eclipse.org/sirius/description/1.1.0 http://www.eclipse.org/sirius/1.1.0#//description" uid="_aloSwOUBEe6pEKlwZ6uh3Q" selectedViews="_eX7fsOUBEe6pEKlwZ6uh3Q _eagSkOUBEe6pEKlwZ6uh3Q _eoS28OUBEe6pEKlwZ6uh3Q _epSVcOUBEe6pEKlwZ6uh3Q _epuaUOUBEe6pEKlwZ6uh3Q _erUVwOUBEe6pEKlwZ6uh3Q _erlbgOUBEe6pEKlwZ6uh3Q" version="15.0.0.202201261500">
-  <semanticResources>empty_project_60.afm</semanticResources>
-  <semanticResources>empty_project_60.capella</semanticResources>
+<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:description="http://www.eclipse.org/sirius/description/1.1.0" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" xsi:schemaLocation="http://www.eclipse.org/sirius/description/1.1.0 http://www.eclipse.org/sirius/1.1.0#//description" uid="_aloSwOUBEe6pEKlwZ6uh3Q" selectedViews="_eX7fsOUBEe6pEKlwZ6uh3Q _eagSkOUBEe6pEKlwZ6uh3Q _eoS28OUBEe6pEKlwZ6uh3Q _epSVcOUBEe6pEKlwZ6uh3Q _epuaUOUBEe6pEKlwZ6uh3Q _erUVwOUBEe6pEKlwZ6uh3Q _erlbgOUBEe6pEKlwZ6uh3Q" version="15.4.1.202403191723">
+  <semanticResources>empty_project.afm</semanticResources>
+  <semanticResources>empty_project.capella</semanticResources>
   <ownedViews xmi:type="viewpoint:DView" uid="_eX7fsOUBEe6pEKlwZ6uh3Q">
     <viewpoint xmi:type="description:Viewpoint" href="platform:/plugin/org.polarsys.kitalpha.ad.integration.sirius/description/ad.odesign#//@ownedViewpoints[name='ad']"/>
   </ownedViews>
