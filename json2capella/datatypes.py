@@ -64,3 +64,8 @@ class StructAttrs(_BaseModel):
     multiplicity: t.Annotated[
         str | None, p.Field(pattern=r"^(?:\d+\.\.)?(\d+|\*)$")
     ] = None
+
+
+CombinedModel: t.TypeAlias = dict[str, Package]
+JSONFileContents: t.TypeAlias = Package | CombinedModel
+JSONAdapter: p.TypeAdapter[JSONFileContents] = p.TypeAdapter(JSONFileContents)

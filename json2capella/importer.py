@@ -35,7 +35,20 @@ def load_json(json_path: pathlib.Path) -> datatypes.Package:
                 ],
             }
         )
-    return datatypes.Package.model_validate(json.loads(json_path.read_text()))
+
+    data = datatypes.JSONAdapter.validate_json(json_path.read_text())
+    if isinstance(data, datatypes.Package):
+        return data
+    if isinstance(data, dict):
+        assert all(isinstance(i, datatypes.Package) for i in data.values())
+        return datatypes.Package.model_validate(
+            {
+                "name": "JSON root package",
+                "prefix": "json_root_package",
+                "subPackages": list(data.values()),
+            }
+        )
+    raise AssertionError(f"Unhandled data type in JSON: {type(data)!r}")
 
 
 def get_old_by_id(old_jsons: list[T], int_id: int | None) -> T | None:
