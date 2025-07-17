@@ -21,13 +21,25 @@ our style guidelines outlined below.
 
 ## Developing
 
-We recommend that you
-[develop inside of a virtual environment](README.md#installation). After you
-have set it up, simply run the unit tests to verify that everything is set up
-correctly:
+Use [uv](https://docs.astral.sh/uv/) to set up a local development environment.
 
 ```sh
-pytest
+git clone https://github.com/DSD-DBS/json2capella
+cd json2capella
+uv sync
+uv run pre-commit install
+
+# You may need to explicitly activate the project venv
+# to make code completion and tools available:
+source .venv/bin/activate.sh  # for Linux / Mac
+.venv\Scripts\activate  # for Windows
+```
+
+You can use `uv run <tool>` to avoid having to manually activate the project
+venv. For example, to run the unit tests, use:
+
+```sh
+uv run pytest
 ```
 
 We additionally recommend that you set up your editor / IDE as follows.
@@ -38,18 +50,6 @@ We additionally recommend that you set up your editor / IDE as follows.
 
 - _If you use Visual Studio Code_: Consider using a platform which supports
   third-party language servers more easily, and continue with the next point.
-
-  Otherwise, set up the editor to run `ruff` and `mypy` when saving. To enable
-  automatic import sorting with `isort`, add the following to your
-  `settings.json`:
-
-  ```json
-  "[python]": {
-      "editor.codeActionsOnSave": {
-          "source.organizeImports": true
-      }
-  }
-  ```
 
   Note that the Pylance language server is not recommended, as it occasionally
   causes false-positive errors for perfectly valid code.
@@ -63,7 +63,7 @@ We additionally recommend that you set up your editor / IDE as follows.
   You can install everything that's needed into the virtualenv with pip:
 
   ```sh
-  pip install "python-lsp-server" pyls-isort pylsp-mypy ruff
+  pip install "python-lsp-server" pylsp-mypy ruff
   ```
 
   This will provide as-you-type linting as well as automatic formatting on
@@ -114,16 +114,9 @@ The key differences are:
   break up strings that are presented to the user in e.g. log messages, as that
   makes it significantly harder to grep for them.
 
-  Use [isort] for automatic sorting of imports. Its settings should
-  automatically be picked up from the `pyproject.toml` file as well.
-
-  [isort]: https://github.com/PyCQA/isort
-
 - **Typing**: We do not make an exception for `typing` imports. Instead of
   writing `from typing import SomeName`, use `import typing as t` and access
   typing related classes like `t.TypedDict`.
-
-  <!-- prettier-ignore -->
 
   Use the new syntax and classes for typing introduced with Python 3.10.
 
