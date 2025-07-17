@@ -38,7 +38,9 @@ class Struct(_BaseModel):
 
     @p.field_validator("extends")
     @classmethod
-    def extends_is_valid_dotted_name(cls, value: str) -> str:
+    def extends_is_valid_dotted_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
         numdots = sum(1 for char in value if char == ".")
         if numdots not in (0, 1):
             raise ValueError(

@@ -38,6 +38,10 @@ dependencies = [
 Homepage = "https://github.com/DSD-DBS/json2capella"
 Documentation = "https://dsd-dbs.github.io/json2capella"
 
+[project.scripts]
+json2capella = "json2capella.__main__:main"
+capella2json = "json2capella.export:main"
+
 [dependency-groups]
 dev = [
   "coverage>=7.9.1",
