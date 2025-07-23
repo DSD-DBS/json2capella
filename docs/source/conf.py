@@ -14,15 +14,14 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
-
 import json2capella
 
 # -- Project information -----------------------------------------------------
 
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 with open("../../pyproject.toml", "rb") as f:
     _metadata = tomllib.load(f)["project"]
 
