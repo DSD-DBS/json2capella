@@ -6,7 +6,6 @@
 # JSON2Capella
 
 ![image](https://github.com/DSD-DBS/json2capella/actions/workflows/build-test-publish.yml/badge.svg)
-![image](https://github.com/DSD-DBS/json2capella/actions/workflows/lint.yml/badge.svg)
 
 Command-line tool for importing package definitions from JSON files into a Capella model's data package.
 
