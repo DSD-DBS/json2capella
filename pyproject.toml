@@ -35,8 +35,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/DSD-DBS/json2capella"
-Documentation = "https://dsd-dbs.github.io/json2capella"
+Homepage = "https://github.com/dbinfrago/json2capella"
+Documentation = "https://dbinfrago.github.io/json2capella"
 
 [dependency-groups]
 dev = [
