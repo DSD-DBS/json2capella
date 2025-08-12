@@ -16,15 +16,15 @@ reduce the burden on our maintainers, please make sure that your code follows
 our style guidelines outlined below.
 
 <!-- prettier-ignore -->
-[open an issue]: https://github.com/DSD-DBS/json2capella/issues
-[open a pull request]: https://github.com/DSD-DBS/json2capella/pulls
+[open an issue]: https://github.com/dbinfrago/json2capella/issues
+[open a pull request]: https://github.com/dbinfrago/json2capella/pulls
 
 ## Developing
 
 Use [uv](https://docs.astral.sh/uv/) to set up a local development environment.
 
 ```sh
-git clone https://github.com/DSD-DBS/json2capella
+git clone https://github.com/dbinfrago/json2capella
 cd json2capella
 uv sync
 uv run pre-commit install
